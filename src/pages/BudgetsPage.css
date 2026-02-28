@@ -1,0 +1,114 @@
+.month-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+}
+
+.budget-overview {
+    padding: var(--space-lg);
+    background: var(--gradient-card);
+}
+
+.budget-overview__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+}
+
+.budget-overview__label {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.budget-overview__value {
+    display: block;
+    font-size: var(--font-lg);
+    font-weight: 700;
+}
+
+/* Progress Bar */
+.budget-progress__bar {
+    height: 6px;
+    background: var(--glass-bg);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.budget-progress__fill {
+    height: 100%;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.5s ease;
+}
+
+.budget-progress__fill--warning {
+    background: linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%);
+}
+
+.budget-progress__fill--danger {
+    background: var(--gradient-expense);
+}
+
+/* Budget Card */
+.budget-card {
+    padding: var(--space-md);
+}
+
+.budget-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+}
+
+.budget-card__cat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.budget-card__name {
+    font-weight: 600;
+    font-size: var(--font-base);
+}
+
+.budget-card__amounts {
+    font-size: var(--font-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.budget-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--space-sm);
+}
+
+/* Badge */
+.budget-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: var(--radius-full);
+}
+
+.budget-badge--safe {
+    background: var(--color-income-bg);
+    color: var(--color-income);
+}
+
+.budget-badge--warning {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+}
+
+.budget-badge--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}

@@ -1,0 +1,32 @@
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-2xl) var(--space-md);
+}
+
+.empty-state__icon {
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+    opacity: 0.5;
+}
+
+.empty-state__title {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.empty-state__desc {
+    font-size: var(--font-sm);
+    color: var(--text-muted);
+    max-width: 260px;
+    margin-bottom: var(--space-lg);
+}
+
+.empty-state__action {
+    margin-top: var(--space-sm);
+}

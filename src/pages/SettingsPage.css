@@ -1,0 +1,181 @@
+.settings-card {
+    padding: var(--space-lg);
+}
+
+.settings-card__header {
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+}
+
+.settings-card__icon {
+    flex-shrink: 0;
+    color: var(--accent-secondary);
+    margin-top: 2px;
+}
+
+.settings-card__title {
+    font-size: var(--font-base);
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.settings-card__desc {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.settings-card--danger {
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+/* API Toggle */
+.api-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.api-toggle:active {
+    transform: scale(0.98);
+}
+
+.api-toggle__label {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.api-toggle__status {
+    font-size: var(--font-xs);
+    font-weight: 600;
+}
+
+.api-toggle__btn {
+    color: var(--text-muted);
+    display: flex;
+    transition: color var(--transition-fast);
+}
+
+.api-toggle__btn--active {
+    color: var(--color-income);
+}
+
+/* API Readonly Field */
+.api-readonly-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+}
+
+.api-readonly-field__value {
+    flex: 1;
+    font-size: var(--font-sm);
+    font-family: 'Courier New', monospace;
+    color: var(--text-secondary);
+    word-break: break-all;
+    user-select: all;
+}
+
+.api-readonly-field__copy,
+.api-readonly-field__actions button {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.api-readonly-field__copy:active,
+.api-readonly-field__actions button:active {
+    color: var(--accent-primary);
+    background: var(--accent-primary-glow);
+}
+
+.api-readonly-field__actions {
+    display: flex;
+    gap: 2px;
+}
+
+.api-regenerate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-xs);
+    color: var(--accent-secondary);
+    padding: 4px 0;
+    transition: color var(--transition-fast);
+}
+
+.api-regenerate:active {
+    color: var(--accent-primary);
+}
+
+/* API Key Input */
+.api-key-input {
+    position: relative;
+}
+
+.api-key-input input {
+    padding-right: 44px;
+}
+
+.api-key-toggle {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    transition: color var(--transition-fast);
+}
+
+.api-key-toggle:active {
+    color: var(--text-primary);
+}
+
+/* App Info */
+.app-info {
+    text-align: center;
+    padding: var(--space-lg) 0;
+}
+
+.app-info__name {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: -0.02em;
+}
+
+.app-info__version {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.app-info__credit {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}

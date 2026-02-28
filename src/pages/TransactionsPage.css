@@ -1,0 +1,108 @@
+/* Search Bar */
+.search-bar {
+    display: flex;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.search-bar__input-wrapper {
+    flex: 1;
+    position: relative;
+}
+
+.search-bar__icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-bar__input {
+    padding-left: 38px;
+    padding-right: 36px;
+}
+
+.search-bar__clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    background: var(--glass-bg);
+}
+
+.search-bar__filter {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.search-bar__filter--active {
+    background: var(--accent-primary-glow);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+/* Filter Panel */
+.filter-panel {
+    padding: var(--space-md);
+}
+
+/* Transaction Actions */
+.txn-item__actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: var(--space-sm);
+}
+
+.txn-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    transition: all var(--transition-fast);
+}
+
+.txn-action-btn:active {
+    background: var(--glass-bg);
+    transform: scale(0.9);
+}
+
+.txn-action-btn--danger:active {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+/* Responsive transaction item flex wrap */
+.txn-item {
+    flex-wrap: wrap;
+}
+
+@media (max-width: 400px) {
+    .txn-item__amount {
+        font-size: var(--font-sm);
+    }
+
+    .txn-item__actions {
+        margin-left: auto;
+    }
+}

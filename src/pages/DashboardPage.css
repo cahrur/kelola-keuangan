@@ -1,0 +1,188 @@
+.dashboard__greeting {
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+/* AI Suggest Card */
+.ai-suggest {
+    padding: var(--space-md);
+    background: linear-gradient(135deg, rgba(59, 152, 123, 0.08) 0%, rgba(95, 184, 154, 0.04) 100%);
+    border: 1px solid rgba(59, 152, 123, 0.15);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-md);
+}
+
+.ai-suggest__header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-xs);
+    font-weight: 600;
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.ai-suggest__tips {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ai-suggest__tip {
+    font-size: var(--font-xs);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+}
+
+.ai-suggest__tip::before {
+    content: '•';
+    position: absolute;
+    left: 6px;
+    color: var(--accent-secondary);
+}
+
+/* Balance Card */
+.balance-card {
+    padding: var(--space-lg);
+    background: var(--gradient-card);
+}
+
+.balance-card__label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-sm);
+}
+
+.balance-card__amount {
+    font-size: var(--font-2xl);
+    font-weight: 800;
+    margin-bottom: var(--space-md);
+}
+
+.balance-card__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.balance-card__stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.balance-card__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.balance-card__icon--income {
+    background: var(--color-income-bg);
+    color: var(--color-income);
+}
+
+.balance-card__icon--expense {
+    background: var(--color-expense-bg);
+    color: var(--color-expense);
+}
+
+.balance-card__stat-label {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.balance-card__stat-value {
+    font-size: var(--font-sm);
+    font-weight: 700;
+}
+
+/* Chart */
+.chart-card {
+    padding: var(--space-sm) 0 0 0;
+}
+
+.chart-tooltip {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-xs);
+}
+
+.chart-tooltip__label {
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.chart-tooltip__value {
+    font-weight: 600;
+}
+
+/* Transaction Item */
+.txn-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-sm);
+    padding: var(--space-md);
+}
+
+.txn-item__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-base);
+    flex-shrink: 0;
+}
+
+.txn-item__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.txn-item__desc {
+    display: block;
+    font-size: var(--font-base);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.txn-item__cat {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.txn-item__amount {
+    font-size: var(--font-base);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* See All */
+.see-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: var(--font-sm);
+    color: var(--accent-primary);
+    font-weight: 600;
+}

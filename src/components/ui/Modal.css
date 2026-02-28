@@ -1,0 +1,120 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-modal-overlay);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding-bottom: calc(var(--safe-area-bottom) + var(--space-md));
+}
+
+.modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md) var(--space-md) 0;
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    z-index: 1;
+}
+
+.modal__header::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 4px;
+    background: var(--glass-border);
+    border-radius: var(--radius-full);
+}
+
+.modal__title {
+    font-size: var(--font-lg);
+    font-weight: 700;
+    padding-top: var(--space-md);
+}
+
+.modal__close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    transition: background var(--transition-fast);
+    margin-top: var(--space-md);
+}
+
+.modal__close:active {
+    background: var(--glass-bg);
+}
+
+.modal__body {
+    padding: var(--space-md);
+}
+
+/* Form inside modal */
+.form-group {
+    margin-bottom: var(--space-md);
+}
+
+.form-label {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.type-toggle__btn {
+    padding: 10px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid var(--glass-border);
+    transition: all var(--transition-fast);
+}
+
+.type-toggle__btn--active-income {
+    background: var(--color-income-bg);
+    border-color: var(--color-income);
+    color: var(--color-income);
+}
+
+.type-toggle__btn--active-expense {
+    background: var(--color-expense-bg);
+    border-color: var(--color-expense);
+    color: var(--color-expense);
+}

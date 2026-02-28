@@ -1,0 +1,167 @@
+.chart-card {
+    position: relative;
+    padding: var(--space-sm) 0;
+}
+
+/* Pie center label */
+.pie-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    text-align: center;
+    pointer-events: none;
+}
+
+.pie-center__label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.pie-center__value {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* Pie Legend */
+.pie-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.pie-legend__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) 0;
+}
+
+.pie-legend__color {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.pie-legend__name {
+    flex: 1;
+    font-size: var(--font-sm);
+    font-weight: 500;
+}
+
+.pie-legend__value {
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.pie-legend__pct {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    min-width: 32px;
+    text-align: right;
+}
+
+/* Report Summary Cards */
+.report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.report-summary-card {
+    padding: var(--space-md);
+}
+
+.report-summary-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-sm);
+}
+
+.report-summary-card__icon-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+
+.report-summary-card__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.report-summary-card__icon--income {
+    background: var(--color-income-bg);
+    color: var(--color-income);
+}
+
+.report-summary-card__icon--expense {
+    background: var(--color-expense-bg);
+    color: var(--color-expense);
+}
+
+.report-summary-card__label {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.report-summary-card__value {
+    display: block;
+    font-size: var(--font-md);
+    font-weight: 700;
+}
+
+.report-summary-card__count {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+}
+
+.report-summary-card__list {
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-sm);
+}
+
+.report-summary-card__row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 6px 0;
+}
+
+.report-summary-card__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.report-summary-card__name {
+    flex: 1;
+    font-size: var(--font-sm);
+    font-weight: 500;
+}
+
+.report-summary-card__amount {
+    font-size: var(--font-sm);
+    font-weight: 600;
+}
+
+.report-summary-card__badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    background: var(--accent-primary-glow);
+    color: var(--accent-primary);
+}

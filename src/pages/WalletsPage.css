@@ -1,0 +1,73 @@
+/* Total Balance */
+.wallet-total {
+    text-align: center;
+    padding: var(--space-lg);
+    background: var(--gradient-card);
+}
+
+.wallet-total__label {
+    display: block;
+    font-size: var(--font-sm);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-xs);
+}
+
+.wallet-total__amount {
+    display: block;
+    font-size: var(--font-2xl);
+    font-weight: 800;
+}
+
+.wallet-total__count {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: var(--space-xs);
+}
+
+/* Wallet Card */
+.wallet-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+}
+
+.wallet-card__left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.wallet-card__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--font-base);
+    flex-shrink: 0;
+}
+
+.wallet-card__name {
+    display: block;
+    font-weight: 600;
+    font-size: var(--font-base);
+}
+
+.wallet-card__balance {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+.wallet-card__actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}

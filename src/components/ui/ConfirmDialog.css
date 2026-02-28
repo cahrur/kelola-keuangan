@@ -1,0 +1,12 @@
+.confirm-dialog__message {
+    font-size: var(--font-base);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-lg);
+    line-height: 1.6;
+}
+
+.confirm-dialog__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
