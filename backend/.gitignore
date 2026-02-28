@@ -1,0 +1,30 @@
+# === SECRETS & CONFIG ===
+.env
+.env.*
+!.env.example
+
+# === AI AGENT SKILLS ===
+skills/
+
+# === DEPENDENCIES ===
+vendor/
+
+# === BUILD OUTPUT ===
+server_binary
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === LOGS & TEMP ===
+*.log
+coverage/
+tmp/
+
+# === DATABASE ===
+*.sqlite
+*.db
