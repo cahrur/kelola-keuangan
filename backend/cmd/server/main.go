@@ -39,6 +39,7 @@ func main() {
 		&model.ChatMessage{},
 		&model.UserAIConfig{},
 		&model.AIInsightCache{},
+		&model.PasswordResetOTP{},
 	); err != nil {
 		log.Fatal("Auto-migration failed:", err)
 	}

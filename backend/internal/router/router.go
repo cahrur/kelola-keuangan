@@ -52,6 +52,8 @@ func Setup(db *gorm.DB) *gin.Engine {
 	obligationHandler := handler.NewObligationHandler(db)
 	budgetHandler := handler.NewBudgetHandler(db)
 	aiHandler := handler.NewAIHandler(db)
+	passwordResetService := service.NewPasswordResetService(db)
+	passwordResetHandler := handler.NewPasswordResetHandler(passwordResetService)
 
 	// Health check (no auth)
 	r.GET("/health", healthHandler.Health)
@@ -67,6 +69,9 @@ func Setup(db *gorm.DB) *gin.Engine {
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.Refresh)
 			auth.POST("/google", googleAuthHandler.GoogleLogin)
+			auth.POST("/forgot-password", passwordResetHandler.ForgotPassword)
+			auth.POST("/verify-otp", passwordResetHandler.VerifyOTP)
+			auth.POST("/reset-password", passwordResetHandler.ResetPassword)
 		}
 
 		// Protected routes

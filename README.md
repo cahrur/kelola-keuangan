@@ -10,6 +10,7 @@ Aplikasi pengelola keuangan pribadi yang modern dan lengkap. Full-stack: React f
 - [x] Register dengan Google OAuth + input nomor WhatsApp
 - [x] JWT access token + refresh token
 - [x] Auto-refresh token saat expired
+- [x] Lupa Password — reset via email OTP (6 digit, berlaku 5 menit)
 
 ### 📊 Dashboard
 - [x] Ringkasan saldo total dari semua kantong
@@ -164,6 +165,11 @@ go run ./cmd/server
 | `AI_API_KEY` | API key untuk AI provider | - |
 | `AI_MODEL` | Model AI yang digunakan | `gpt-4o-mini` |
 | `ENCRYPTION_KEY` | Key untuk enkripsi AES-256 (harus 32 karakter) | - |
+| `SMTP_HOST` | SMTP server host | - |
+| `SMTP_PORT` | SMTP server port | `587` |
+| `SMTP_USER` | SMTP username/email | - |
+| `SMTP_PASS` | SMTP password / app password | - |
+| `SMTP_FROM` | Alamat pengirim email | - |
 
 ---
 
@@ -221,9 +227,24 @@ BCRYPT_ROUNDS=12
 CORS_ORIGINS=https://yourdomain.com
 
 GOOGLE_CLIENT_ID=<google-client-id>.apps.googleusercontent.com
+
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_API_KEY=<your-ai-api-key>
+AI_MODEL=deepseek/deepseek-v3.2
+
+ENCRYPTION_KEY=<random-string-wajib-32-karakter>
+
+SMTP_HOST=smtp.larksuite.com
+SMTP_PORT=587
+SMTP_USER=noreply-kk@mudahdeal.com
+SMTP_PASS=<smtp-password>
+SMTP_FROM=noreply-kk@mudahdeal.com
 ```
 
-> **Catatan:** `GOOGLE_CLIENT_ID` cukup **1 kali** saja. Dockerfile otomatis meneruskannya ke frontend (sebagai `VITE_GOOGLE_CLIENT_ID`) saat build, dan backend membacanya saat runtime. Pastikan di Coolify, `GOOGLE_CLIENT_ID` di-set sebagai **Build Variable** (bukan hanya runtime) supaya Vite bisa membacanya saat `npm run build`.
+> **Catatan:**
+> - `GOOGLE_CLIENT_ID` cukup **1 kali** saja. Dockerfile otomatis meneruskannya ke frontend (sebagai `VITE_GOOGLE_CLIENT_ID`) saat build, dan backend membacanya saat runtime. Pastikan di Coolify, `GOOGLE_CLIENT_ID` di-set sebagai **Build Variable** (bukan hanya runtime) supaya Vite bisa membacanya saat `npm run build`.
+> - `SMTP_*` dibutuhkan untuk fitur **Lupa Password** (kirim OTP via email). Jika tidak diisi, fitur reset password tidak akan berfungsi.
+> - `ENCRYPTION_KEY` harus tepat **32 karakter** untuk enkripsi AES-256-GCM (API key AI user).
 
 #### Port di Coolify:
 - **Ports Exposes**: `8000`
@@ -253,6 +274,9 @@ Base URL: `/api/v1`
 | `POST` | `/auth/refresh` | Refresh access token |
 | `POST` | `/auth/logout` | Logout |
 | `GET` | `/auth/me` | Get current user profile |
+| `POST` | `/auth/forgot-password` | Kirim OTP ke email |
+| `POST` | `/auth/verify-otp` | Verifikasi kode OTP |
+| `POST` | `/auth/reset-password` | Reset password dengan OTP |
 | `GET` | `/transactions` | List transactions |
 | `POST` | `/transactions` | Create transaction |
 | `PUT` | `/transactions/:id` | Update transaction |

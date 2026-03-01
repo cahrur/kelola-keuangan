@@ -194,3 +194,96 @@
         transform: rotate(360deg);
     }
 }
+
+/* Forgot Password Link */
+.auth-forgot {
+    text-align: center;
+    margin-top: 8px;
+}
+
+.auth-forgot a {
+    font-size: 0.8125rem;
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-forgot a:hover {
+    text-decoration: underline;
+}
+
+/* Step Indicator */
+.auth-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 24px;
+}
+
+.auth-steps__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-color, #e2e8f0);
+    transition: background 0.3s;
+}
+
+.auth-steps__dot--active {
+    background: var(--accent-primary);
+}
+
+.auth-steps__line {
+    width: 40px;
+    height: 2px;
+    background: var(--border-color, #e2e8f0);
+    transition: background 0.3s;
+}
+
+.auth-steps__line--active {
+    background: var(--accent-primary);
+}
+
+/* OTP Input */
+.auth-form__input--otp {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5em;
+    font-family: 'Inter', monospace;
+}
+
+.auth-form__hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Resend Link */
+.auth-form__link-btn {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    padding: 8px;
+    font-family: 'Inter', sans-serif;
+}
+
+.auth-form__link-btn:hover {
+    text-decoration: underline;
+}
+
+/* Success Message */
+.auth-form__success {
+    text-align: center;
+    padding: 16px;
+    background: rgba(59, 152, 123, 0.08);
+    border: 1px solid rgba(59, 152, 123, 0.15);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: var(--accent-primary);
+    line-height: 1.5;
+}

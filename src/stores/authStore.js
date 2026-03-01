@@ -74,6 +74,21 @@ const useAuthStore = create((set, get) => ({
             set({ user: null, isAuthenticated: false, isLoading: false });
         }
     },
+
+    forgotPassword: async (email) => {
+        const { data } = await api.post('/auth/forgot-password', { email });
+        return data;
+    },
+
+    verifyOTP: async (email, otp) => {
+        const { data } = await api.post('/auth/verify-otp', { email, otp });
+        return data;
+    },
+
+    resetPassword: async (email, otp, password) => {
+        const { data } = await api.post('/auth/reset-password', { email, otp, password });
+        return data;
+    },
 }));
 
 export default useAuthStore;

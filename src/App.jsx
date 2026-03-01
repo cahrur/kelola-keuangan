@@ -25,6 +25,7 @@ import DebtsPage from './pages/DebtsPage';
 import ObligationsPage from './pages/ObligationsPage';
 import AiPage from './pages/AiPage';
 import AboutPage from './pages/AboutPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
 import DeleteAccountPolicyPage from './pages/DeleteAccountPolicyPage';
 import DeleteAccountPage from './pages/DeleteAccountPage';
@@ -61,6 +62,7 @@ function AppContent() {
           {/* Public routes — redirect to home if already logged in */}
           <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />} />
+          <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/" replace /> : <ForgotPasswordPage />} />
 
           {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

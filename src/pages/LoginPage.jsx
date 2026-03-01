@@ -82,6 +82,10 @@ export default function LoginPage() {
                     </button>
                 </form>
 
+                <div className="auth-forgot">
+                    <Link to="/forgot-password">Lupa Password?</Link>
+                </div>
+
                 <div className="auth-divider">
                     <div className="auth-divider__line" />
                     <span className="auth-divider__text">atau</span>

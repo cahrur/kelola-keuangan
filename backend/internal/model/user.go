@@ -45,3 +45,12 @@ func (u *User) ToResponse() UserResponse {
 		CreatedAt: u.CreatedAt,
 	}
 }
+
+type PasswordResetOTP struct {
+	ID        uint      `gorm:"primaryKey"`
+	UserID    uint      `gorm:"index;not null"`
+	OTP       string    `gorm:"size:6;not null"`
+	ExpiresAt time.Time `gorm:"not null"`
+	Used      bool      `gorm:"default:false"`
+	CreatedAt time.Time
+}
