@@ -24,6 +24,10 @@ import WalletsPage from './pages/WalletsPage';
 import DebtsPage from './pages/DebtsPage';
 import ObligationsPage from './pages/ObligationsPage';
 import AiPage from './pages/AiPage';
+import AboutPage from './pages/AboutPage';
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage';
+import DeleteAccountPolicyPage from './pages/DeleteAccountPolicyPage';
+import DeleteAccountPage from './pages/DeleteAccountPage';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -69,6 +73,12 @@ function AppContent() {
           <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+
+          {/* Public info pages */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/delete-account-policy" element={<DeleteAccountPolicyPage />} />
+          <Route path="/delete-account" element={<DeleteAccountPage />} />
         </Routes>
       </main>
       {isAuthenticated && <BottomNav />}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, Settings, LogOut } from 'lucide-react';
+import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, Settings, Info, LogOut } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
 
 const DRAWER_NAV = [
@@ -10,6 +10,7 @@ const DRAWER_NAV = [
     { to: '/budgets', icon: PiggyBank, label: 'Anggaran' },
     { to: '/reports', icon: BarChart3, label: 'Laporan' },
     { to: '/settings', icon: Settings, label: 'Setelan' },
+    { to: '/about', icon: Info, label: 'Tentang' },
 ];
 
 export default function PageHeader({ title, subtitle, actions }) {
