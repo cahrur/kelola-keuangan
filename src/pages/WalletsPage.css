@@ -71,3 +71,49 @@
     gap: 2px;
     flex-shrink: 0;
 }
+
+/* Mutations List */
+.mutations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.mutation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    gap: var(--space-sm);
+}
+
+.mutation-item__info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.mutation-item__desc {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mutation-item__meta {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.mutation-item__amount {
+    font-size: var(--font-sm);
+    font-weight: 700;
+    white-space: nowrap;
+}

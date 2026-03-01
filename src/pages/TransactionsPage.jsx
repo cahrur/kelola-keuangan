@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Plus, Search, Filter, Pencil, Trash2, X } from 'lucide-react';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
+import useWalletStore from '../stores/walletStore';
 import useSettingsStore from '../stores/settingsStore';
 import { formatCurrency, formatShortDate } from '../utils/formatters';
 import Card from '../components/ui/Card';
@@ -17,6 +18,7 @@ export default function TransactionsPage() {
     const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
         useTransactionStore();
     const { categories, getCategoryById } = useCategoryStore();
+    const { wallets, getWalletById } = useWalletStore();
     const { currency } = useSettingsStore();
 
     const [showForm, setShowForm] = useState(false);
@@ -35,6 +37,7 @@ export default function TransactionsPage() {
     const [formAmount, setFormAmount] = useState('');
     const [formDesc, setFormDesc] = useState('');
     const [formCategory, setFormCategory] = useState('');
+    const [formWallet, setFormWallet] = useState('');
     const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10));
 
     const filteredTransactions = useMemo(() => {
@@ -57,6 +60,7 @@ export default function TransactionsPage() {
         setFormAmount('');
         setFormDesc('');
         setFormCategory('');
+        setFormWallet('');
         setFormDate(new Date().toISOString().slice(0, 10));
         setEditingTxn(null);
     };
@@ -72,19 +76,21 @@ export default function TransactionsPage() {
         setFormAmount(txn.amount.toString());
         setFormDesc(txn.description);
         setFormCategory(txn.categoryId);
+        setFormWallet(txn.walletId || '');
         setFormDate(txn.date);
         setShowForm(true);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!formAmount || !formDesc || !formCategory) return;
+        if (!formAmount || !formDesc || !formCategory || !formWallet) return;
 
         const data = {
             type: formType,
             amount: parseFloat(formAmount),
             description: formDesc,
             categoryId: parseInt(formCategory),
+            walletId: parseInt(formWallet),
             date: formDate,
         };
 
@@ -229,7 +235,7 @@ export default function TransactionsPage() {
                                 <div className="txn-item__info">
                                     <span className="txn-item__desc">{txn.description}</span>
                                     <span className="txn-item__cat">
-                                        {category?.name || '-'} · {formatShortDate(txn.date)}
+                                        {category?.name || '-'} · {getWalletById(txn.walletId)?.name || '-'} · {formatShortDate(txn.date)}
                                     </span>
                                 </div>
                                 <span className={`txn-item__amount ${txn.type === 'income' ? 'text-income' : 'text-expense'}`}>
@@ -301,14 +307,24 @@ export default function TransactionsPage() {
                             </select>
                         </div>
                         <div className="form-group">
-                            <label className="form-label">Tanggal</label>
-                            <input
-                                type="date"
-                                value={formDate}
-                                onChange={(e) => setFormDate(e.target.value)}
-                                required
-                            />
+                            <label className="form-label">Kantong</label>
+                            <select value={formWallet} onChange={(e) => setFormWallet(e.target.value)} required>
+                                <option value="">Pilih</option>
+                                {wallets.map((w) => (
+                                    <option key={w.id} value={w.id}>{w.name}</option>
+                                ))}
+                            </select>
                         </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Tanggal</label>
+                        <input
+                            type="date"
+                            value={formDate}
+                            onChange={(e) => setFormDate(e.target.value)}
+                            required
+                        />
                     </div>
 
                     <Button type="submit" fullWidth className="mt-md">

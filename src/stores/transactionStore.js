@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '../utils/api';
+import useWalletStore from './walletStore';
 
 const useTransactionStore = create((set, get) => ({
     transactions: [],
@@ -17,6 +18,8 @@ const useTransactionStore = create((set, get) => ({
     addTransaction: async (transaction) => {
         const { data } = await api.post('/transactions', transaction);
         set((state) => ({ transactions: [data.data, ...state.transactions] }));
+        // Re-fetch wallets to reflect balance changes
+        useWalletStore.getState().fetchWallets();
         return data.data;
     },
 
@@ -25,11 +28,13 @@ const useTransactionStore = create((set, get) => ({
         set((state) => ({
             transactions: state.transactions.map((t) => (t.id === id ? data.data : t)),
         }));
+        useWalletStore.getState().fetchWallets();
     },
 
     deleteTransaction: async (id) => {
         await api.delete(`/transactions/${id}`);
         set((state) => ({ transactions: state.transactions.filter((t) => t.id !== id) }));
+        useWalletStore.getState().fetchWallets();
     },
 
     getFilteredTransactions: ({ type, categoryId, startDate, endDate, search }) => {

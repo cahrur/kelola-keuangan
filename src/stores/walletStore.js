@@ -44,24 +44,30 @@ const useWalletStore = create((set, get) => ({
         }));
     },
 
-    transfer: async (fromId, toId, amount) => {
-        const wallets = get().wallets;
-        const from = wallets.find((w) => w.id === fromId);
-        const to = wallets.find((w) => w.id === toId);
-        if (!from || !to) return;
+    transfer: async (fromId, toId, amount, description) => {
+        const { data } = await api.post('/wallets/transfer', {
+            fromWalletId: fromId,
+            toWalletId: toId,
+            amount,
+            description,
+        });
 
-        await Promise.all([
-            api.put(`/wallets/${fromId}`, { balance: from.balance - amount }),
-            api.put(`/wallets/${toId}`, { balance: to.balance + amount }),
-        ]);
+        // Update both wallets from server response
+        const fromWallet = data.data.fromWallet;
+        const toWallet = data.data.toWallet;
 
         set((state) => ({
             wallets: state.wallets.map((w) => {
-                if (w.id === fromId) return { ...w, balance: w.balance - amount };
-                if (w.id === toId) return { ...w, balance: w.balance + amount };
+                if (w.id === fromWallet.id) return fromWallet;
+                if (w.id === toWallet.id) return toWallet;
                 return w;
             }),
         }));
+    },
+
+    fetchMutations: async (walletId) => {
+        const { data } = await api.get(`/wallets/${walletId}/mutations`);
+        return data.data || [];
     },
 
     getTotalBalance: () => {

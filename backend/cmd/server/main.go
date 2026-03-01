@@ -40,6 +40,7 @@ func main() {
 		&model.UserAIConfig{},
 		&model.AIInsightCache{},
 		&model.PasswordResetOTP{},
+		&model.WalletTransfer{},
 	); err != nil {
 		log.Fatal("Auto-migration failed:", err)
 	}

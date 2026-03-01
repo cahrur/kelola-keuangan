@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Plus, ArrowRightLeft, Pencil, Trash2, Wallet, Building, Smartphone, CreditCard, PiggyBank, Banknote } from 'lucide-react';
+import { Plus, ArrowRightLeft, Pencil, Trash2, Wallet, Building, Smartphone, CreditCard, PiggyBank, Banknote, ScrollText } from 'lucide-react';
 import useWalletStore from '../stores/walletStore';
 import useSettingsStore from '../stores/settingsStore';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, formatShortDate } from '../utils/formatters';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
@@ -18,7 +18,7 @@ const COLOR_OPTIONS = [
 ];
 
 export default function WalletsPage() {
-    const { wallets, addWallet, updateWallet, deleteWallet, adjustBalance, transfer, getTotalBalance } = useWalletStore();
+    const { wallets, addWallet, updateWallet, deleteWallet, adjustBalance, transfer, fetchMutations, getTotalBalance } = useWalletStore();
     const { currency } = useSettingsStore();
 
     const [showForm, setShowForm] = useState(false);
@@ -27,6 +27,10 @@ export default function WalletsPage() {
     const [editingWallet, setEditingWallet] = useState(null);
     const [deletingWallet, setDeletingWallet] = useState(null);
     const [adjustWallet, setAdjustWallet] = useState(null);
+    const [showMutations, setShowMutations] = useState(false);
+    const [mutationsWallet, setMutationsWallet] = useState(null);
+    const [mutations, setMutations] = useState([]);
+    const [loadingMutations, setLoadingMutations] = useState(false);
 
     // Form
     const [formName, setFormName] = useState('');
@@ -83,7 +87,7 @@ export default function WalletsPage() {
     const handleTransfer = (e) => {
         e.preventDefault();
         if (!transferFrom || !transferTo || !transferAmount || transferFrom === transferTo) return;
-        transfer(transferFrom, transferTo, parseFloat(transferAmount));
+        transfer(parseInt(transferFrom), parseInt(transferTo), parseFloat(transferAmount));
         setShowTransfer(false);
         setTransferFrom('');
         setTransferTo('');
@@ -104,6 +108,20 @@ export default function WalletsPage() {
         if (deletingWallet) {
             deleteWallet(deletingWallet.id);
             setDeletingWallet(null);
+        }
+    };
+
+    const openMutations = async (w) => {
+        setMutationsWallet(w);
+        setShowMutations(true);
+        setLoadingMutations(true);
+        try {
+            const data = await fetchMutations(w.id);
+            setMutations(data);
+        } catch {
+            setMutations([]);
+        } finally {
+            setLoadingMutations(false);
         }
     };
 
@@ -146,6 +164,13 @@ export default function WalletsPage() {
                             </div>
                         </div>
                         <div className="wallet-card__actions">
+                            <button
+                                className="txn-action-btn"
+                                onClick={() => openMutations(w)}
+                                title="Lihat mutasi"
+                            >
+                                <ScrollText size={14} />
+                            </button>
                             <button
                                 className="txn-action-btn"
                                 onClick={() => { setAdjustWallet(w); setAdjustType('add'); setAdjustAmount(''); setShowAdjust(true); }}
@@ -205,7 +230,7 @@ export default function WalletsPage() {
                         <label className="form-label">Ke</label>
                         <select value={transferTo} onChange={(e) => setTransferTo(e.target.value)} required>
                             <option value="">Pilih kantong tujuan</option>
-                            {wallets.filter((w) => w.id !== transferFrom).map((w) => (
+                            {wallets.filter((w) => String(w.id) !== transferFrom).map((w) => (
                                 <option key={w.id} value={w.id}>{w.name} ({formatCurrency(w.balance, currency)})</option>
                             ))}
                         </select>
@@ -245,6 +270,36 @@ export default function WalletsPage() {
                 title="Hapus Kantong?"
                 message={`Kantong "${deletingWallet?.name}" akan dihapus permanen. Saldo di dalamnya juga akan hilang.`}
             />
+
+            {/* Mutations Modal */}
+            <Modal isOpen={showMutations} onClose={() => { setShowMutations(false); setMutationsWallet(null); setMutations([]); }} title={`Mutasi — ${mutationsWallet?.name || ''}`}>
+                {loadingMutations ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Memuat...</div>
+                ) : mutations.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Belum ada mutasi</div>
+                ) : (
+                    <div className="mutations-list">
+                        {mutations.map((m, i) => {
+                            const isIncome = m.type === 'income' || m.type === 'transferIn';
+                            const isTransfer = m.type === 'transferIn' || m.type === 'transferOut';
+                            return (
+                                <div key={`${m.type}-${m.id}-${i}`} className="mutation-item">
+                                    <div className="mutation-item__info">
+                                        <span className="mutation-item__desc">{m.description}</span>
+                                        <span className="mutation-item__meta">
+                                            {isTransfer ? (m.type === 'transferIn' ? '↓ Transfer Masuk' : '↑ Transfer Keluar') : (m.type === 'income' ? 'Pemasukan' : 'Pengeluaran')}
+                                            {' · '}{formatShortDate(m.date)}
+                                        </span>
+                                    </div>
+                                    <span className={`mutation-item__amount ${isIncome ? 'text-income' : 'text-expense'}`}>
+                                        {isIncome ? '+' : '-'}{formatCurrency(m.amount, currency)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 }

@@ -32,6 +32,9 @@ func (h *TransactionHandler) List(c *gin.Context) {
 	if catID := c.Query("category_id"); catID != "" {
 		query = query.Where("category_id = ?", catID)
 	}
+	if walletID := c.Query("wallet_id"); walletID != "" {
+		query = query.Where("wallet_id = ?", walletID)
+	}
 	if from := c.Query("date_from"); from != "" {
 		query = query.Where("date >= ?", from)
 	}
@@ -58,10 +61,32 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 		Amount:      req.Amount,
 		Description: req.Description,
 		CategoryID:  req.CategoryID,
+		WalletID:    req.WalletID,
 		Date:        req.Date,
 	}
 
-	if err := h.DB.Create(&txn).Error; err != nil {
+	// Use DB transaction to ensure atomicity
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&txn).Error; err != nil {
+			return err
+		}
+
+		// Auto-adjust wallet balance
+		if txn.WalletID != nil {
+			delta := txn.Amount
+			if txn.Type == "expense" {
+				delta = -delta
+			}
+			if err := tx.Model(&model.Wallet{}).Where("id = ? AND user_id = ?", *txn.WalletID, userID).
+				Update("balance", gorm.Expr("balance + ?", delta)).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
 		util.Error(c, http.StatusInternalServerError, "Failed to create transaction")
 		return
 	}
@@ -85,6 +110,11 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 		return
 	}
 
+	// Capture old values for wallet balance reversal
+	oldType := txn.Type
+	oldAmount := txn.Amount
+	oldWalletID := txn.WalletID
+
 	// Whitelist fields to prevent mass assignment
 	updates := map[string]interface{}{}
 	if req.Type != "" {
@@ -102,8 +132,51 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 	if req.Date != "" {
 		updates["date"] = req.Date
 	}
+	if req.WalletID != nil {
+		updates["wallet_id"] = req.WalletID
+	}
 
-	h.DB.Model(&txn).Updates(updates)
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		// Reverse old wallet balance
+		if oldWalletID != nil {
+			oldDelta := oldAmount
+			if oldType == "expense" {
+				oldDelta = -oldDelta
+			}
+			if err := tx.Model(&model.Wallet{}).Where("id = ? AND user_id = ?", *oldWalletID, userID).
+				Update("balance", gorm.Expr("balance - ?", oldDelta)).Error; err != nil {
+				return err
+			}
+		}
+
+		// Apply updates
+		if err := tx.Model(&txn).Updates(updates).Error; err != nil {
+			return err
+		}
+
+		// Re-read for new values
+		tx.First(&txn, txn.ID)
+
+		// Apply new wallet balance
+		if txn.WalletID != nil {
+			newDelta := txn.Amount
+			if txn.Type == "expense" {
+				newDelta = -newDelta
+			}
+			if err := tx.Model(&model.Wallet{}).Where("id = ? AND user_id = ?", *txn.WalletID, userID).
+				Update("balance", gorm.Expr("balance + ?", newDelta)).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Failed to update transaction")
+		return
+	}
+
 	util.Success(c, http.StatusOK, "Transaction updated", txn)
 }
 
@@ -111,9 +184,34 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	id, _ := strconv.ParseUint(c.Param("id"), 10, 64)
 
-	result := h.DB.Where("id = ? AND user_id = ?", id, userID).Delete(&model.Transaction{})
-	if result.RowsAffected == 0 {
+	var txn model.Transaction
+	if err := h.DB.Where("id = ? AND user_id = ?", id, userID).First(&txn).Error; err != nil {
 		util.Error(c, http.StatusNotFound, "Transaction not found")
+		return
+	}
+
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		// Reverse wallet balance before deleting
+		if txn.WalletID != nil {
+			delta := txn.Amount
+			if txn.Type == "expense" {
+				delta = -delta
+			}
+			if err := tx.Model(&model.Wallet{}).Where("id = ? AND user_id = ?", *txn.WalletID, userID).
+				Update("balance", gorm.Expr("balance - ?", delta)).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := tx.Delete(&txn).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Failed to delete transaction")
 		return
 	}
 
