@@ -459,3 +459,96 @@ func truncateTitle(s string) string {
 	}
 	return s
 }
+
+// ============ AI INSIGHT (Dashboard) ============
+
+func (h *AIHandler) GetInsight(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	// Check cache — valid if updated today
+	var cache model.AIInsightCache
+	today := time.Now().Truncate(24 * time.Hour)
+	err := h.DB.Where("user_id = ? AND updated_at >= ?", userID, today).First(&cache).Error
+	if err == nil && cache.Content != "" {
+		util.Success(c, http.StatusOK, "Insight retrieved (cached)", gin.H{
+			"content":    cache.Content,
+			"cached":     true,
+			"updated_at": cache.UpdatedAt,
+		})
+		return
+	}
+
+	// Generate new insight
+	content, genErr := h.generateInsight(userID.(uint))
+	if genErr != nil {
+		util.Error(c, http.StatusInternalServerError, "Gagal mendapatkan insight AI")
+		return
+	}
+
+	// Save or update cache
+	if cache.ID > 0 {
+		cache.Content = content
+		h.DB.Save(&cache)
+	} else {
+		cache = model.AIInsightCache{UserID: userID.(uint), Content: content}
+		h.DB.Create(&cache)
+	}
+
+	util.Success(c, http.StatusOK, "Insight generated", gin.H{
+		"content":    content,
+		"cached":     false,
+		"updated_at": cache.UpdatedAt,
+	})
+}
+
+func (h *AIHandler) RefreshInsight(c *gin.Context) {
+	userID, _ := c.Get("userID")
+
+	content, err := h.generateInsight(userID.(uint))
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Gagal mendapatkan insight AI")
+		return
+	}
+
+	// Upsert cache
+	var cache model.AIInsightCache
+	h.DB.Where("user_id = ?", userID).First(&cache)
+	if cache.ID > 0 {
+		cache.Content = content
+		h.DB.Save(&cache)
+	} else {
+		cache = model.AIInsightCache{UserID: userID.(uint), Content: content}
+		h.DB.Create(&cache)
+	}
+
+	util.Success(c, http.StatusOK, "Insight refreshed", gin.H{
+		"content":    content,
+		"cached":     false,
+		"updated_at": cache.UpdatedAt,
+	})
+}
+
+func (h *AIHandler) generateInsight(userID uint) (string, error) {
+	baseURL, apiKey, model_ := h.resolveAIConfig(userID)
+	if apiKey == "" {
+		return "", fmt.Errorf("AI not configured")
+	}
+
+	financialContext := h.buildFinancialContext(userID)
+
+	prompt := `Berikan tepat 3 baris insight keuangan singkat dari data berikut. Aturan ketat:
+- Tepat 3 baris, 1 insight per baris
+- Awali setiap baris dengan 1 emoji yang relevan
+- Setiap baris MAKSIMAL 15 kata, padat dan langsung ke inti
+- JANGAN gunakan format markdown (tanpa **, tanpa #, tanpa bullet)
+- Langsung ke insight, tanpa pembuka atau penutup
+
+Data keuangan:
+` + financialContext
+
+	messages := []map[string]string{
+		{"role": "user", "content": prompt},
+	}
+
+	return h.callAI(baseURL, apiKey, model_, messages)
+}

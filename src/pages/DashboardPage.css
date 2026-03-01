@@ -23,25 +23,77 @@
     margin-bottom: var(--space-sm);
 }
 
+.ai-suggest__refresh {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    transition: all var(--transition-fast);
+    opacity: 0.6;
+}
+
+.ai-suggest__refresh:hover:not(:disabled) {
+    opacity: 1;
+    background: rgba(59, 152, 123, 0.12);
+}
+
+.ai-suggest__refresh:disabled {
+    cursor: not-allowed;
+}
+
 .ai-suggest__tips {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .ai-suggest__tip {
     font-size: var(--font-xs);
     color: var(--text-secondary);
-    line-height: 1.5;
-    padding-left: 20px;
-    position: relative;
+    line-height: 1.6;
 }
 
-.ai-suggest__tip::before {
-    content: '•';
-    position: absolute;
-    left: 6px;
-    color: var(--accent-secondary);
+.ai-suggest__skeleton {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, rgba(59, 152, 123, 0.08) 25%, rgba(59, 152, 123, 0.15) 50%, rgba(59, 152, 123, 0.08) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    width: 100%;
+}
+
+.ai-suggest__skeleton--short {
+    width: 65%;
+    margin-top: 4px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Balance Card */

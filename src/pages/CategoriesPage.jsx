@@ -107,7 +107,7 @@ export default function CategoriesPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Kategori" subtitle="Kelola kategori pemasukan & pengeluaran" />
+            <PageHeader title="Kategori" />
 
             <Button fullWidth className="mb-lg" onClick={() => { resetForm(); setShowForm(true); }} icon={<Plus size={18} />}>
                 Tambah Kategori

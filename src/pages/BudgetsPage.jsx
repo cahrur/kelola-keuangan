@@ -63,7 +63,7 @@ export default function BudgetsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Anggaran" subtitle="Kelola budget pengeluaran bulanan" />
+            <PageHeader title="Anggaran" />
 
             {/* Month Selector */}
             <div className="month-selector">

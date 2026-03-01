@@ -178,7 +178,7 @@ export default function ObligationsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Tanggungan" subtitle="Kelola tagihan & kewajiban rutin" />
+            <PageHeader title="Tanggungan" />
 
             {/* Summary */}
             <Card glow className="obligation-summary animate-scale-in">

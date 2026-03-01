@@ -54,3 +54,12 @@ func (c *UserAIConfig) MaskAPIKey() string {
 	}
 	return c.APIKey[:4] + "••••••••" + c.APIKey[len(c.APIKey)-4:]
 }
+
+// AIInsightCache stores daily AI insight cache per user
+type AIInsightCache struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	UserID    uint      `json:"user_id" gorm:"uniqueIndex;not null"`
+	Content   string    `json:"content" gorm:"type:text;not null"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}

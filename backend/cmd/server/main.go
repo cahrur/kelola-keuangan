@@ -38,6 +38,7 @@ func main() {
 		&model.ChatSession{},
 		&model.ChatMessage{},
 		&model.UserAIConfig{},
+		&model.AIInsightCache{},
 	); err != nil {
 		log.Fatal("Auto-migration failed:", err)
 	}

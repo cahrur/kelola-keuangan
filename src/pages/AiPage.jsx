@@ -24,8 +24,13 @@ export default function AiPage() {
     const textareaRef = useRef(null);
 
     useEffect(() => {
-        fetchSessions();
-    }, [fetchSessions]);
+        fetchSessions().then(() => {
+            const state = useAIStore.getState();
+            if (!state.activeSessionId && state.sessions.length > 0) {
+                setActiveSession(state.sessions[0].id);
+            }
+        });
+    }, []);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

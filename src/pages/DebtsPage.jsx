@@ -185,7 +185,7 @@ export default function DebtsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Hutang" subtitle="Kelola hutang piutang" />
+            <PageHeader title="Hutang" />
 
             {/* Summary */}
             <div className="grid-2 mb-md">

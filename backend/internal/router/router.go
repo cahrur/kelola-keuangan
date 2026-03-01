@@ -122,6 +122,8 @@ func Setup(db *gorm.DB) *gin.Engine {
 			protected.POST("/ai/chat", aiHandler.Chat)
 			protected.GET("/ai/config", aiHandler.GetAIConfig)
 			protected.PUT("/ai/config", aiHandler.UpdateAIConfig)
+			protected.GET("/ai/insight", aiHandler.GetInsight)
+			protected.POST("/ai/insight/refresh", aiHandler.RefreshInsight)
 		}
 	}
 

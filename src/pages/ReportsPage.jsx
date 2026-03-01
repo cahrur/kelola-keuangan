@@ -115,7 +115,7 @@ export default function ReportsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Laporan" subtitle="Analisis keuangan kamu" />
+            <PageHeader title="Laporan" />
 
             {hasTransactions && (<>
                 {/* Year Selector */}

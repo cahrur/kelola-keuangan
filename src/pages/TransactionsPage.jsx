@@ -110,7 +110,7 @@ export default function TransactionsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Transaksi" subtitle={`${transactions.length} transaksi tercatat`} />
+            <PageHeader title="Transaksi" />
 
             {/* Search & Filter Bar */}
             <div className="search-bar">

@@ -109,7 +109,7 @@ export default function WalletsPage() {
 
     return (
         <div className="page-container">
-            <PageHeader title="Kantong" subtitle="Kelola saldo di berbagai kantong" />
+            <PageHeader title="Kantong" />
 
             {/* Total Balance */}
             <Card glow className="wallet-total animate-scale-in">

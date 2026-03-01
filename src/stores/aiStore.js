@@ -135,6 +135,30 @@ const useAIStore = create((set, get) => ({
         return data.data;
     },
 
+    // AI Insight (Dashboard)
+    insight: null,
+    insightLoading: false,
+
+    fetchInsight: async () => {
+        set({ insightLoading: true });
+        try {
+            const { data } = await api.get('/ai/insight');
+            set({ insight: data.data, insightLoading: false });
+        } catch {
+            set({ insightLoading: false });
+        }
+    },
+
+    refreshInsight: async () => {
+        set({ insightLoading: true });
+        try {
+            const { data } = await api.post('/ai/insight/refresh');
+            set({ insight: data.data, insightLoading: false });
+        } catch {
+            set({ insightLoading: false });
+        }
+    },
+
     // Clear
     clearChat: () => set({ activeSessionId: null, messages: [] }),
 }));

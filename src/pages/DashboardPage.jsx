@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Wallet, ArrowRight, Plus, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowRight, Plus, Sparkles, RefreshCw } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
 import useSettingsStore from '../stores/settingsStore';
+import useAIStore from '../stores/aiStore';
 import { formatCurrency, formatShortDate } from '../utils/formatters';
 import { MONTHS } from '../utils/constants';
 import Card from '../components/ui/Card';
@@ -17,6 +18,7 @@ export default function DashboardPage({ onAddTransaction }) {
     const { transactions, getTotalByType, getMonthlyData } = useTransactionStore();
     const { getCategoryById } = useCategoryStore();
     const { currency } = useSettingsStore();
+    const { insight, insightLoading, fetchInsight, refreshInsight } = useAIStore();
 
     const now = new Date();
     const month = now.getMonth();
@@ -25,6 +27,11 @@ export default function DashboardPage({ onAddTransaction }) {
     const income = getTotalByType('income', month, year);
     const expense = getTotalByType('expense', month, year);
     const balance = income - expense;
+
+    // Fetch AI insight on mount
+    useEffect(() => {
+        fetchInsight();
+    }, []);
 
     const chartData = useMemo(() => {
         const data = getMonthlyData(year);
@@ -40,27 +47,6 @@ export default function DashboardPage({ onAddTransaction }) {
     const recentTransactions = useMemo(() => {
         return transactions.slice(0, 5);
     }, [transactions]);
-
-    const aiSuggestions = useMemo(() => {
-        const tips = [];
-        if (transactions.length === 0) {
-            tips.push('Mulai catat pengeluaran harianmu untuk insight keuangan yang lebih baik.');
-            tips.push('Tambahkan pemasukan dan pengeluaran agar AI bisa memberikan analisis.');
-        } else {
-            if (expense > income && income > 0) {
-                tips.push(`Pengeluaranmu ${formatCurrency(expense - income, currency)} lebih besar dari pemasukan. Coba kurangi belanja non-esensial.`);
-            } else if (income > 0 && expense / income < 0.5) {
-                tips.push(`Bagus! Kamu hemat ${Math.round((1 - expense / income) * 100)}% dari pemasukan. Pertimbangkan untuk investasi.`);
-            }
-            if (expense > 0) {
-                tips.push('Cek halaman Anggaran untuk memastikan pengeluaranmu terkontrol.');
-            }
-            if (transactions.length > 3) {
-                tips.push('Lihat Laporan untuk analisis tren keuanganmu secara mendalam.');
-            }
-        }
-        return tips.slice(0, 2);
-    }, [transactions, income, expense, currency]);
 
     const CustomTooltip = ({ active, payload, label }) => {
         if (!active || !payload) return null;
@@ -80,16 +66,33 @@ export default function DashboardPage({ onAddTransaction }) {
         <div className="page-container">
             <PageHeader title="Dashboard" />
 
-            {/* AI Suggestions */}
+            {/* AI Insight */}
             <div className="ai-suggest animate-slide-up">
                 <div className="ai-suggest__header">
                     <Sparkles size={14} />
                     <span>AI Insight</span>
+                    <button
+                        className="ai-suggest__refresh"
+                        onClick={refreshInsight}
+                        disabled={insightLoading}
+                        title="Refresh insight"
+                    >
+                        <RefreshCw size={14} className={insightLoading ? 'spin' : ''} />
+                    </button>
                 </div>
                 <div className="ai-suggest__tips">
-                    {aiSuggestions.map((tip, i) => (
-                        <p key={i} className="ai-suggest__tip">{tip}</p>
-                    ))}
+                    {insightLoading ? (
+                        <>
+                            <div className="ai-suggest__skeleton" />
+                            <div className="ai-suggest__skeleton ai-suggest__skeleton--short" />
+                        </>
+                    ) : insight?.content ? (
+                        insight.content.split('\n').filter(Boolean).slice(0, 3).map((line, i) => (
+                            <p key={i} className="ai-suggest__tip">{line.replace(/\*\*/g, '').replace(/\*/g, '').replace(/^#+\s*/, '')}</p>
+                        ))
+                    ) : (
+                        <p className="ai-suggest__tip">Memuat insight keuangan...</p>
+                    )}
                 </div>
             </div>
 
