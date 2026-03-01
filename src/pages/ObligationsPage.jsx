@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Pencil, Trash2, CalendarCheck, CheckCircle, Circle, RefreshCw, Clock } from 'lucide-react';
 import useObligationStore from '../stores/obligationStore';
 import useTransactionStore from '../stores/transactionStore';
+import useCategoryStore from '../stores/categoryStore';
 import useSettingsStore from '../stores/settingsStore';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import Card from '../components/ui/Card';
@@ -16,6 +17,7 @@ import './ObligationsPage.css';
 export default function ObligationsPage() {
     const { obligations, addObligation, updateObligation, deleteObligation, togglePeriod, isPeriodPaid, getPeriodsForObligation, getTotalMonthlyAmount } = useObligationStore();
     const { addTransaction } = useTransactionStore();
+    const { categories } = useCategoryStore();
     const { currency } = useSettingsStore();
 
     const [showForm, setShowForm] = useState(false);
@@ -32,6 +34,9 @@ export default function ObligationsPage() {
     const [formEnd, setFormEnd] = useState('');
     const [formAmount, setFormAmount] = useState('');
     const [formAutoRecord, setFormAutoRecord] = useState(true);
+    const [formCategory, setFormCategory] = useState('');
+
+    const expenseCategories = categories.filter((c) => c.type === 'expense');
 
     const totalMonthly = getTotalMonthlyAmount();
 
@@ -47,6 +52,7 @@ export default function ObligationsPage() {
         setFormEnd('');
         setFormAmount('');
         setFormAutoRecord(true);
+        setFormCategory('');
         setEditingObligation(null);
     };
 
@@ -59,6 +65,7 @@ export default function ObligationsPage() {
         setFormEnd(o.endDate || '');
         setFormAmount(o.amount.toString());
         setFormAutoRecord(o.autoRecord);
+        setFormCategory(o.categoryId ? o.categoryId.toString() : '');
         setShowForm(true);
     };
 
@@ -74,6 +81,7 @@ export default function ObligationsPage() {
             endDate: formEnd || null,
             amount: parseFloat(formAmount),
             autoRecord: formAutoRecord,
+            categoryId: formCategory ? parseInt(formCategory) : null,
         };
 
         if (editingObligation) {
@@ -95,7 +103,7 @@ export default function ObligationsPage() {
                 type: 'expense',
                 amount: obligation.amount,
                 description: `${obligation.name} — ${periodKey}`,
-                categoryId: '',
+                categoryId: obligation.categoryId || '',
                 date: new Date().toISOString().slice(0, 10),
             });
         }
@@ -223,6 +231,16 @@ export default function ObligationsPage() {
             <Modal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title={editingObligation ? 'Edit Tanggungan' : 'Tanggungan Baru'}>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
+                        <label className="form-label">Kategori Pengeluaran</label>
+                        <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} required>
+                            <option value="">Pilih Kategori</option>
+                            {expenseCategories.map((c) => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
                         <label className="form-label">Nama</label>
                         <input type="text" placeholder="Contoh: Listrik PLN" value={formName} onChange={(e) => setFormName(e.target.value)} required />
                     </div>
@@ -230,6 +248,11 @@ export default function ObligationsPage() {
                     <div className="form-group">
                         <label className="form-label">Deskripsi (opsional)</label>
                         <input type="text" placeholder="Detail tambahan" value={formDesc} onChange={(e) => setFormDesc(e.target.value)} />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Nominal</label>
+                        <CurrencyInput placeholder="0" value={formAmount} onChange={(val) => setFormAmount(val)} required />
                     </div>
 
                     <div className="form-group">
@@ -244,10 +267,14 @@ export default function ObligationsPage() {
                         </div>
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">Nominal</label>
-                        <CurrencyInput placeholder="0" value={formAmount} onChange={(val) => setFormAmount(val)} required />
-                    </div>
+                    <label className="obligation-checkbox">
+                        <input type="checkbox" checked={formAutoRecord} onChange={(e) => setFormAutoRecord(e.target.checked)} />
+                        <CalendarCheck size={16} />
+                        <div>
+                            <span className="obligation-checkbox__label">Catat Otomatis</span>
+                            <span className="obligation-checkbox__desc">Otomatis menambah transaksi pengeluaran saat dicentang</span>
+                        </div>
+                    </label>
 
                     <div className="form-row">
                         <div className="form-group">
@@ -259,15 +286,6 @@ export default function ObligationsPage() {
                             <input type="date" value={formEnd} onChange={(e) => setFormEnd(e.target.value)} />
                         </div>
                     </div>
-
-                    <label className="obligation-checkbox">
-                        <input type="checkbox" checked={formAutoRecord} onChange={(e) => setFormAutoRecord(e.target.checked)} />
-                        <CalendarCheck size={16} />
-                        <div>
-                            <span className="obligation-checkbox__label">Catat Otomatis</span>
-                            <span className="obligation-checkbox__desc">Otomatis menambah transaksi pengeluaran saat dicentang</span>
-                        </div>
-                    </label>
 
                     <Button type="submit" fullWidth className="mt-md">
                         {editingObligation ? 'Simpan' : 'Tambah'}

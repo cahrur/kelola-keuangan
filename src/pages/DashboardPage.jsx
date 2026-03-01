@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Wallet, ArrowRight, Plus, Sparkles, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowRight, Plus, Sparkles, RefreshCw, Bell } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
@@ -11,6 +11,7 @@ import { MONTHS } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
+import logoImg from '../assets/logo.png';
 import './DashboardPage.css';
 
 export default function DashboardPage({ onAddTransaction }) {
@@ -66,7 +67,20 @@ export default function DashboardPage({ onAddTransaction }) {
 
     return (
         <div className="page-container">
-            <PageHeader title="Dashboard" />
+            <PageHeader
+                title=""
+                centerContent={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <img src={logoImg} alt="Kelola Keuangan" style={{ width: 28, height: 28, objectFit: 'contain', borderRadius: 6 }} />
+                        <span style={{ fontWeight: 600, fontSize: 'var(--font-md)', color: 'var(--text-primary)' }}>Kelola Keuangan</span>
+                    </div>
+                }
+                actions={
+                    <button className="page-header__btn" onClick={() => navigate('/settings')}>
+                        <Bell size={20} />
+                    </button>
+                }
+            />
 
             {/* AI Insight */}
             <div className="ai-suggest animate-slide-up">

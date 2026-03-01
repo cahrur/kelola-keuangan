@@ -1,0 +1,32 @@
+.date-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    background: var(--bg-input);
+    cursor: pointer;
+    min-height: 44px;
+}
+
+.date-input-display {
+    font-size: var(--font-base);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+}
+
+.date-input-display--placeholder {
+    color: var(--text-muted);
+}
+
+.date-input-hidden {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+}

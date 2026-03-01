@@ -44,6 +44,7 @@ func (h *ObligationHandler) Create(c *gin.Context) {
 		EndDate:     req.EndDate,
 		Amount:      req.Amount,
 		AutoRecord:  req.AutoRecord,
+		CategoryID:  req.CategoryID,
 	}
 
 	if err := h.DB.Create(&obligation).Error; err != nil {
@@ -91,6 +92,9 @@ func (h *ObligationHandler) Update(c *gin.Context) {
 	}
 	if req.AutoRecord != nil {
 		updates["auto_record"] = *req.AutoRecord
+	}
+	if req.CategoryID != nil {
+		updates["category_id"] = *req.CategoryID
 	}
 
 	h.DB.Model(&obligation).Updates(updates)

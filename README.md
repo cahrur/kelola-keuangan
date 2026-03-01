@@ -19,7 +19,7 @@ Aplikasi pengelola keuangan pribadi yang modern dan lengkap. Full-stack: React f
 - [x] Daftar transaksi terbaru
 - [x] AI Insight — saran cerdas berdasarkan data keuangan
 
-### 🤖 AI Asisten (Kelola AI)
+### 🤖 AI Asisten
 - [x] Chat interaktif dengan AI yang memahami data keuanganmu
 - [x] AI membaca data Transaksi, Kantong, Hutang, Tanggungan, Anggaran, dan Kategori
 - [x] Dibatasi hanya topik keuangan — tidak bisa ditanya hal lain

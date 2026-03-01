@@ -12,7 +12,7 @@ export function formatCurrency(amount, currencyCode = 'IDR') {
     }).format(amount);
 }
 
-export function formatDate(dateStr, formatStr = 'd MMM yyyy') {
+export function formatDate(dateStr, formatStr = 'dd MM yyyy') {
     if (!dateStr) return '-';
     const date = typeof dateStr === 'string' ? parseISO(dateStr) : dateStr;
     if (!isValid(date)) return '-';

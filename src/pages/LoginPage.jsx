@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../stores/authStore';
@@ -12,6 +12,19 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const googleRef = useRef(null);
+    const [googleWidth, setGoogleWidth] = useState(300);
+
+    useEffect(() => {
+        const measure = () => {
+            if (googleRef.current) {
+                setGoogleWidth(googleRef.current.offsetWidth);
+            }
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -92,7 +105,7 @@ export default function LoginPage() {
                     <div className="auth-divider__line" />
                 </div>
 
-                <div className="auth-google">
+                <div className="auth-google" ref={googleRef}>
                     <GoogleLogin
                         onSuccess={handleGoogleSuccess}
                         onError={() => setError('Login Google gagal')}
@@ -100,7 +113,8 @@ export default function LoginPage() {
                         size="large"
                         text="signin_with"
                         shape="rectangular"
-                        width="340"
+                        width={googleWidth}
+                        logo_alignment="center"
                     />
                 </div>
 

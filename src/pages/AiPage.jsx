@@ -22,10 +22,12 @@ export default function AiPage() {
     const [error, setError] = useState('');
     const messagesEndRef = useRef(null);
     const textareaRef = useRef(null);
+    const pageRef = useRef(null);
 
     useEffect(() => {
         fetchSessions();
     }, []);
+
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -106,14 +108,14 @@ export default function AiPage() {
     const hasMessages = messages.length > 0;
 
     return (
-        <div className="ai-page">
+        <div className="ai-page" ref={pageRef}>
             {/* Header */}
             <div className="ai-header">
                 <div className="ai-header__left">
                     <button className="ai-header__btn" onClick={() => setShowSessions(true)}>
                         <Menu size={20} />
                     </button>
-                    <span className="ai-header__title">Kelola AI</span>
+                    <span className="ai-header__title">Asisten AI</span>
                     <span className="ai-header__badge">Beta</span>
                 </div>
                 <div className="ai-header__actions">
@@ -131,7 +133,7 @@ export default function AiPage() {
                     </div>
                     <h2 className="ai-welcome__title">Halo! 👋</h2>
                     <p className="ai-welcome__text">
-                        Saya Kelola AI, asisten keuangan pribadimu. Tanya apapun tentang keuanganmu — saya bisa baca data transaksi, kantong, hutang, tanggungan, dan anggaranmu.
+                        Saya AI Asisten, asisten keuangan pribadimu. Tanya apapun tentang keuanganmu — saya bisa baca data transaksi, kantong, hutang, tanggungan, dan anggaranmu.
                     </p>
                     <div className="ai-welcome__suggestions">
                         {SUGGESTIONS.map((s) => (

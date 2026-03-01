@@ -1,3 +1,46 @@
+/* Dashboard Header */
+.dashboard-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    margin-bottom: var(--space-sm);
+}
+
+.dashboard-header .page-header {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.dashboard-header__logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+
+.dashboard-header__notif {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    padding: 8px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all var(--transition-fast);
+}
+
+.dashboard-header__notif:hover {
+    color: var(--accent-primary);
+    background: var(--bg-card-hover);
+}
+
 .dashboard__greeting {
     font-size: var(--font-sm);
     color: var(--text-secondary);

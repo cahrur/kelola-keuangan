@@ -292,10 +292,18 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 		sb.WriteString(fmt.Sprintf("Total saldo: Rp %.0f\n\n", totalBalance))
 	}
 
-	// Recent transactions (last 30)
+	// Recent transactions (last 30) with category names
 	var transactions []model.Transaction
 	h.DB.Where("user_id = ?", userID).Order("date DESC").Limit(30).Find(&transactions)
 	if len(transactions) > 0 {
+		// Build category name lookup
+		var allCats []model.Category
+		h.DB.Where("user_id = ?", userID).Find(&allCats)
+		catLookup := make(map[uint]string)
+		for _, c := range allCats {
+			catLookup[c.ID] = c.Name
+		}
+
 		sb.WriteString("== 30 TRANSAKSI TERAKHIR ==\n")
 		totalIncome := 0.0
 		totalExpense := 0.0
@@ -307,9 +315,17 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 			} else {
 				totalIncome += t.Amount
 			}
-			sb.WriteString(fmt.Sprintf("- [%s] %s: Rp %.0f (%s)\n", t.Date, typeLabel, t.Amount, t.Description))
+			catName := catLookup[t.CategoryID]
+			if catName == "" {
+				catName = "Tanpa Kategori"
+			}
+			desc := t.Description
+			if desc == "" {
+				desc = "-"
+			}
+			sb.WriteString(fmt.Sprintf("- [%s] %s: Rp %.0f | Kategori: %s | Ket: %s\n", t.Date, typeLabel, t.Amount, catName, desc))
 		}
-		sb.WriteString(fmt.Sprintf("Total pemasukan: Rp %.0f | Total pengeluaran: Rp %.0f\n\n", totalIncome, totalExpense))
+		sb.WriteString(fmt.Sprintf("Total pemasukan bulan ini: Rp %.0f | Total pengeluaran bulan ini: Rp %.0f\n\n", totalIncome, totalExpense))
 	}
 
 	// Debts
@@ -344,8 +360,19 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 	h.DB.Where("user_id = ?", userID).Find(&budgets)
 	if len(budgets) > 0 {
 		sb.WriteString("== ANGGARAN ==\n")
+		// Load categories for name lookup
+		var catMap = make(map[uint]string)
+		var cats []model.Category
+		h.DB.Where("user_id = ?", userID).Find(&cats)
+		for _, c := range cats {
+			catMap[c.ID] = c.Name
+		}
 		for _, b := range budgets {
-			sb.WriteString(fmt.Sprintf("- Kategori ID %d: Rp %.0f/bulan (%d/%d)\n", b.CategoryID, b.Amount, b.Month, b.Year))
+			catName := catMap[b.CategoryID]
+			if catName == "" {
+				catName = fmt.Sprintf("ID %d", b.CategoryID)
+			}
+			sb.WriteString(fmt.Sprintf("- %s: Rp %.0f/bulan (%d/%d)\n", catName, b.Amount, b.Month, b.Year))
 		}
 		sb.WriteString("\n")
 	}
@@ -365,7 +392,7 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 }
 
 func (h *AIHandler) buildSystemPrompt(userID uint, financialContext string) string {
-	base := `Kamu adalah "Kelola AI", asisten keuangan pribadi cerdas yang TERINTEGRASI di dalam aplikasi "Kelola Keuangan".
+	base := `Kamu adalah "Asisten Keuangan", asisten keuangan pribadi cerdas yang TERINTEGRASI di dalam aplikasi "Kelola Keuangan".
 
 FITUR APLIKASI (gunakan HANYA nama-nama ini saat merujuk fitur):
 - "Transaksi" — tempat user mencatat pemasukan dan pengeluaran
@@ -536,18 +563,30 @@ func (h *AIHandler) generateInsight(userID uint) (string, error) {
 
 	financialContext := h.buildFinancialContext(userID)
 
-	prompt := `Berikan tepat 3 baris insight keuangan singkat dari data berikut. Aturan ketat:
+	if strings.TrimSpace(financialContext) == "" {
+		return "📊 Data belum cukup untuk insight.\n💡 Mulai catat transaksi untuk mendapat analisis.\n✨ Tambahkan kantong dan kategori untuk pengelolaan lebih baik.", nil
+	}
+
+	systemMsg := `Kamu adalah analis keuangan yang SANGAT AKURAT. Aturan MUTLAK:
+1. HANYA gunakan angka, nama kantong, dan nama kategori yang TERTULIS PERSIS di data.
+2. JANGAN pernah mengarang, membulatkan, atau mengasumsikan angka/nama yang tidak ada.
+3. Jika data kurang, katakan "Data belum cukup" daripada menebak.
+4. Setiap angka yang kamu sebutkan HARUS bisa ditemukan di data yang diberikan.
+5. Setiap nama kantong/kategori yang kamu sebut HARUS ada di data.`
+
+	userMsg := `Berikan tepat 3 baris insight keuangan dari data di bawah. Format:
 - Tepat 3 baris, 1 insight per baris
 - Awali setiap baris dengan 1 emoji yang relevan
-- Setiap baris MAKSIMAL 15 kata, padat dan langsung ke inti
-- JANGAN gunakan format markdown (tanpa **, tanpa #, tanpa bullet)
-- Langsung ke insight, tanpa pembuka atau penutup
+- Setiap baris MAKSIMAL 15 kata
+- TANPA format markdown (tanpa **, tanpa #, tanpa bullet)
+- VERIFIKASI SEBELUM MENJAWAB: setiap angka dan nama yang kamu sebut harus PERSIS sama dengan yang ada di data
 
 Data keuangan:
 ` + financialContext
 
 	messages := []map[string]string{
-		{"role": "user", "content": prompt},
+		{"role": "system", "content": systemMsg},
+		{"role": "user", "content": userMsg},
 	}
 
 	return h.callAI(baseURL, apiKey, model_, messages)

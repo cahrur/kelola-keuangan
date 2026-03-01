@@ -12,6 +12,7 @@ type Obligation struct {
 	EndDate     string    `json:"end_date" gorm:"size:10"`
 	Amount      float64   `json:"amount" gorm:"not null" binding:"required,gt=0"`
 	AutoRecord  bool      `json:"auto_record" gorm:"default:false"`
+	CategoryID  *uint     `json:"category_id" gorm:"index"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
@@ -32,6 +33,7 @@ type CreateObligationRequest struct {
 	EndDate     string  `json:"end_date"`
 	Amount      float64 `json:"amount" binding:"required,gt=0"`
 	AutoRecord  bool    `json:"auto_record"`
+	CategoryID  *uint   `json:"category_id"`
 }
 
 type UpdateObligationRequest struct {
@@ -42,4 +44,5 @@ type UpdateObligationRequest struct {
 	EndDate     string   `json:"end_date"`
 	Amount      *float64 `json:"amount" binding:"omitempty,gt=0"`
 	AutoRecord  *bool    `json:"auto_record"`
+	CategoryID  *uint    `json:"category_id"`
 }

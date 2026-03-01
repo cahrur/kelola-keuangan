@@ -121,18 +121,28 @@ img {
     background: var(--bg-card);
     border-bottom: 1px solid var(--glass-border);
     margin: 0 calc(-1 * var(--space-md)) var(--space-lg);
+    position: relative;
 }
 
 .page-header__left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.page-header__center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
 }
 
 .page-title {
     font-size: var(--font-md);
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
 }
 
 .page-subtitle {
@@ -141,9 +151,11 @@ img {
     margin-top: 2px;
 }
 
-.page-header__actions {
+.page-header__right {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 1;
 }
 
 .page-header__btn {

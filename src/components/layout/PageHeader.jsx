@@ -14,7 +14,7 @@ const DRAWER_NAV = [
     { to: '/about', icon: Info, label: 'Tentang' },
 ];
 
-export default function PageHeader({ title, subtitle, actions }) {
+export default function PageHeader({ title, subtitle, actions, centerContent }) {
     const [showDrawer, setShowDrawer] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -33,12 +33,16 @@ export default function PageHeader({ title, subtitle, actions }) {
                     <button className="page-header__btn" onClick={() => setShowDrawer(true)}>
                         <Menu size={20} />
                     </button>
-                    <div>
-                        <h1 className="page-title">{title}</h1>
-                        {subtitle && <p className="page-subtitle">{subtitle}</p>}
-                    </div>
                 </div>
-                {actions && <div className="page-header__actions">{actions}</div>}
+                <div className="page-header__center">
+                    {centerContent ? centerContent : (
+                        title ? <h1 className="page-title">{title}</h1> : null
+                    )}
+                    {subtitle && <p className="page-subtitle">{subtitle}</p>}
+                </div>
+                <div className="page-header__right">
+                    {actions || <span style={{ width: 36 }} />}
+                </div>
             </div>
 
             {/* Drawer */}
