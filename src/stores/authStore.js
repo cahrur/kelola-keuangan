@@ -22,7 +22,6 @@ const useAuthStore = create((set, get) => ({
 
     login: async (email, password) => {
         const { data } = await api.post('/auth/login', { email, password });
-        // Response is auto-camelized: data.data.accessToken, data.data.user
         get().setAuth(data.data.user, data.data.accessToken);
         return data;
     },

@@ -28,17 +28,13 @@ import AiPage from './pages/AiPage';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
 function AppContent() {
-  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const fetchTransactions = useTransactionStore((s) => s.fetchTransactions);
   const fetchCategories = useCategoryStore((s) => s.fetchCategories);
   const fetchWallets = useWalletStore((s) => s.fetchWallets);
   const fetchDebts = useDebtStore((s) => s.fetchDebts);
   const fetchObligations = useObligationStore((s) => s.fetchObligations);
   const fetchBudgets = useBudgetStore((s) => s.fetchBudgets);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
 
   // After auth confirmed, fetch all data
   useEffect(() => {
@@ -52,9 +48,7 @@ function AppContent() {
     }
   }, [isAuthenticated, fetchTransactions, fetchCategories, fetchWallets, fetchDebts, fetchObligations, fetchBudgets]);
 
-  if (isLoading) {
-    return null; // Splash handles the loading state
-  }
+  // AppContent is only rendered after auth check completes (isLoading=false)
 
   return (
     <div className="app">
@@ -83,14 +77,24 @@ function AppContent() {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
-  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
+  const [splashAnimDone, setSplashAnimDone] = useState(false);
+  const isLoading = useAuthStore((s) => s.isLoading);
+  const checkAuth = useAuthStore((s) => s.checkAuth);
+  const handleSplashFinish = useCallback(() => setSplashAnimDone(true), []);
+
+  // Run auth check at app level (not inside AppContent which is gated on isLoading)
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Show splash until BOTH animation finishes AND auth check completes
+  const showSplash = !splashAnimDone || isLoading;
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <BrowserRouter>
         {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-        <AppContent />
+        {!showSplash && <AppContent />}
       </BrowserRouter>
     </GoogleOAuthProvider>
   );
