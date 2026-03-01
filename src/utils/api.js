@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { camelizeKeys, snakeizeKeys } from './normalize';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 // In-memory token storage per auth-standards Rule 4
 // NEVER use localStorage or sessionStorage for access tokens

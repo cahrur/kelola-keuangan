@@ -3,7 +3,7 @@ import axios from 'axios';
 import api, { setAccessToken, clearAccessToken, getAccessToken } from '../utils/api';
 import { camelizeKeys } from '../utils/normalize';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 const useAuthStore = create((set, get) => ({
     user: null,
