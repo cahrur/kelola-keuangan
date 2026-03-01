@@ -137,6 +137,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 	r.Static("/assets", "./dist/assets")
 	r.StaticFile("/favicon.ico", "./dist/favicon.ico")
 	r.StaticFile("/manifest.json", "./dist/manifest.json")
+	r.StaticFile("/logo.png", "./dist/logo.png")
 
 	// SPA fallback: serve index.html for all non-API, non-asset routes
 	r.NoRoute(func(c *gin.Context) {
