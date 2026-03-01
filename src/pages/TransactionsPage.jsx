@@ -212,7 +212,7 @@ export default function TransactionsPage() {
                     <EmptyState
                         icon={<Search size={48} />}
                         title={search || hasActiveFilters ? 'Tidak ditemukan' : 'Belum ada transaksi'}
-                        description={search || hasActiveFilters ? 'Coba ubah filter atau kata kunci' : 'Mulai catat keuangan dengan menambahkan transaksi pertama'}
+                        description={search || hasActiveFilters ? 'Coba ubah filter atau kata kunci' : 'Mulai kelola keuangan dengan menambahkan transaksi pertama'}
                         action={!search && !hasActiveFilters && (
                             <Button onClick={openAddForm} icon={<Plus size={16} />}>Tambah Transaksi</Button>
                         )}

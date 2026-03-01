@@ -22,8 +22,11 @@
 }
 
 .auth-card__logo {
-    font-size: 2rem;
-    margin-bottom: 8px;
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    margin: 0 auto 8px;
+    display: block;
 }
 
 .auth-card__title {

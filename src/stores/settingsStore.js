@@ -16,7 +16,7 @@ const useSettingsStore = create(
             setAiApiKey: (aiApiKey) => set({ aiApiKey }),
             setAiPrompt: (aiPrompt) => set({ aiPrompt }),
         }),
-        { name: 'catatku-settings' }
+        { name: 'kelolaku-settings' }
     )
 );
 

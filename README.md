@@ -1,6 +1,6 @@
-# Catat Keuangan — Aplikasi Pencatat Keuangan Pribadi
+# Kelola Keuangan — Aplikasi Pengelola Keuangan Pribadi
 
-Aplikasi pencatatan keuangan pribadi yang modern dan lengkap. Full-stack: React frontend + Golang backend, autentikasi JWT + Google OAuth, semua data per-user di PostgreSQL, deploy jadi 1 container di Coolify.
+Aplikasi pengelola keuangan pribadi yang modern dan lengkap. Full-stack: React frontend + Golang backend, autentikasi JWT + Google OAuth, semua data per-user di PostgreSQL, deploy jadi 1 container di Coolify.
 
 ## Features
 

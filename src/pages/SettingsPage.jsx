@@ -91,7 +91,7 @@ export default function SettingsPage() {
             {/* App Info */}
             <div className="app-info mt-lg">
                 <p className="app-info__name">Kelola Keuangan</p>
-                <p className="app-info__version">v1.0.0 — Aplikasi Pencatat Keuangan Pribadi</p>
+                <p className="app-info__version">v1.0.0 — Aplikasi Pengelola Keuangan Pribadi</p>
             </div>
         </div>
     );

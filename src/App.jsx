@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import BottomNav from './components/layout/BottomNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import SplashScreen from './components/ui/SplashScreen';
 import useAuthStore from './stores/authStore';
 import useTransactionStore from './stores/transactionStore';
 import useCategoryStore from './stores/categoryStore';
@@ -51,11 +52,7 @@ function AppContent() {
   }, [isAuthenticated, fetchTransactions, fetchCategories, fetchWallets, fetchDebts, fetchObligations, fetchBudgets]);
 
   if (isLoading) {
-    return (
-      <div className="auth-loading">
-        <div className="auth-loading__spinner" />
-      </div>
-    );
+    return null; // Splash handles the loading state
   }
 
   return (
@@ -84,9 +81,13 @@ function AppContent() {
 }
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
+  const handleSplashFinish = useCallback(() => setShowSplash(false), []);
+
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <BrowserRouter>
+        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
         <AppContent />
       </BrowserRouter>
     </GoogleOAuthProvider>
