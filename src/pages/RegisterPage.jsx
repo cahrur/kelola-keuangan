@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../stores/authStore';
+import logoImg from '../assets/logo.png';
 import './AuthPage.css';
 
 export default function RegisterPage() {
@@ -71,7 +72,7 @@ export default function RegisterPage() {
             <div className="auth-page">
                 <div className="auth-card">
                     <div className="auth-card__header">
-                        <div className="auth-card__logo">💰</div>
+                        <img className="auth-card__logo" src={logoImg} alt="Kelola Keuangan" width="64" height="64" />
                         <h1 className="auth-card__title">Daftar dengan Google</h1>
                         <p className="auth-card__subtitle">Masukkan nomor WhatsApp kamu</p>
                     </div>
@@ -112,7 +113,7 @@ export default function RegisterPage() {
         <div className="auth-page">
             <div className="auth-card">
                 <div className="auth-card__header">
-                    <div className="auth-card__logo">💰</div>
+                    <img className="auth-card__logo" src={logoImg} alt="Kelola Keuangan" width="64" height="64" />
                     <h1 className="auth-card__title">Daftar</h1>
                     <p className="auth-card__subtitle">Buat akun baru untuk mengelola keuangan</p>
                 </div>
