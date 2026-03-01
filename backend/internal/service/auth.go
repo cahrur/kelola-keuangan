@@ -59,7 +59,7 @@ func (s *AuthService) Register(name, email, phone, password string) (*model.User
 	// Check if email already exists
 	var existing model.User
 	if err := s.DB.Where("email = ?", email).First(&existing).Error; err == nil {
-		return nil, errors.New("email already registered")
+		return nil, errors.New("Email sudah terdaftar")
 	}
 
 	// Validate password policy per auth-standards Rule 6

@@ -179,3 +179,133 @@
     color: var(--text-muted);
     margin-top: 2px;
 }
+
+/* Settings Section */
+.settings-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.settings-section__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    color: var(--accent-primary);
+}
+
+.settings-section__header h2 {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.settings-section__desc {
+    font-size: var(--font-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+    line-height: 1.5;
+}
+
+.settings-section__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Settings Field */
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.settings-field__label {
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.settings-field__input {
+    padding: 10px 14px;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    background: var(--bg-input);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    font-family: var(--font-family);
+}
+
+.settings-field__input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-primary-glow);
+}
+
+.settings-field__hint {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Save Button */
+.settings-save-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    font-family: var(--font-family);
+}
+
+.settings-save-btn:hover:not(:disabled) {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px var(--accent-primary-glow);
+}
+
+.settings-save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Alerts */
+.settings-alert {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+}
+
+.settings-alert--error {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.settings-alert--success {
+    background: var(--color-income-bg);
+    color: var(--color-income);
+}
+
+/* Spin animation for loader */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}

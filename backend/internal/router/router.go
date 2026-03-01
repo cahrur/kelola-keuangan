@@ -51,6 +51,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 	debtHandler := handler.NewDebtHandler(db)
 	obligationHandler := handler.NewObligationHandler(db)
 	budgetHandler := handler.NewBudgetHandler(db)
+	aiHandler := handler.NewAIHandler(db)
 
 	// Health check (no auth)
 	r.GET("/health", healthHandler.Health)
@@ -112,6 +113,15 @@ func Setup(db *gorm.DB) *gin.Engine {
 			protected.GET("/budgets", budgetHandler.List)
 			protected.POST("/budgets", budgetHandler.Set)
 			protected.DELETE("/budgets/:id", budgetHandler.Delete)
+
+			// AI
+			protected.GET("/ai/sessions", aiHandler.ListSessions)
+			protected.POST("/ai/sessions", aiHandler.CreateSession)
+			protected.DELETE("/ai/sessions/:id", aiHandler.DeleteSession)
+			protected.GET("/ai/sessions/:id/messages", aiHandler.GetMessages)
+			protected.POST("/ai/chat", aiHandler.Chat)
+			protected.GET("/ai/config", aiHandler.GetAIConfig)
+			protected.PUT("/ai/config", aiHandler.UpdateAIConfig)
 		}
 	}
 
@@ -119,6 +129,8 @@ func Setup(db *gorm.DB) *gin.Engine {
 	// Check if dist/ directory exists (production build)
 	r.Static("/assets", "./dist/assets")
 	r.StaticFile("/favicon.ico", "./dist/favicon.ico")
+	r.StaticFile("/logo.png", "./dist/logo.png")
+	r.StaticFile("/manifest.json", "./dist/manifest.json")
 
 	// SPA fallback: serve index.html for all non-API, non-asset routes
 	r.NoRoute(func(c *gin.Context) {

@@ -30,3 +30,6 @@ tmp/
 # === DATABASE ===
 *.sqlite
 *.db
+
+roadmap.md
+backend/server.exe

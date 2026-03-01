@@ -23,6 +23,10 @@ type Config struct {
 	BcryptRounds   int
 	CORSOrigins    []string
 	GoogleClientID string
+	AIBaseURL      string
+	AIAPIKey       string
+	AIModel        string
+	EncryptionKey  string
 }
 
 var AppConfig *Config
@@ -51,6 +55,10 @@ func Load() *Config {
 		BcryptRounds:   rounds,
 		CORSOrigins:    origins,
 		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
+		AIBaseURL:      getEnv("AI_BASE_URL", ""),
+		AIAPIKey:       getEnv("AI_API_KEY", ""),
+		AIModel:        getEnv("AI_MODEL", "gpt-4o-mini"),
+		EncryptionKey:  getEnv("ENCRYPTION_KEY", ""),
 	}
 
 	return AppConfig

@@ -35,6 +35,9 @@ func main() {
 		&model.Obligation{},
 		&model.ObligationChecklist{},
 		&model.Budget{},
+		&model.ChatSession{},
+		&model.ChatMessage{},
+		&model.UserAIConfig{},
 	); err != nil {
 		log.Fatal("Auto-migration failed:", err)
 	}

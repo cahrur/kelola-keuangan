@@ -16,6 +16,18 @@ Aplikasi pengelola keuangan pribadi yang modern dan lengkap. Full-stack: React f
 - [x] Total pemasukan & pengeluaran bulan ini
 - [x] Chart tren bulanan (bar chart Pemasukan vs Pengeluaran)
 - [x] Daftar transaksi terbaru
+- [x] AI Insight — saran cerdas berdasarkan data keuangan
+
+### 🤖 AI Asisten (Kelola AI)
+- [x] Chat interaktif dengan AI yang memahami data keuanganmu
+- [x] AI membaca data Transaksi, Kantong, Hutang, Tanggungan, Anggaran, dan Kategori
+- [x] Dibatasi hanya topik keuangan — tidak bisa ditanya hal lain
+- [x] Session/riwayat chat tersimpan di database
+- [x] AI menggunakan nama fitur aplikasi (Kantong, Anggaran, dll) bukan istilah generik
+- [x] Konfigurasi AI kustom: Base URL, API Key, Model, Custom Prompt
+- [x] API Key user dienkripsi dengan AES-256-GCM sebelum disimpan di database
+- [x] Kompatibel dengan OpenAI API dan semua provider OpenAI-compatible
+- [x] Default config dari env server, bisa di-override per user di Setelan
 
 ### 💸 Transaksi
 - [x] CRUD lengkap (tambah, edit, hapus)
@@ -71,8 +83,9 @@ Aplikasi pengelola keuangan pribadi yang modern dan lengkap. Full-stack: React f
 - [x] Ringkasan tanggungan (est. pengeluaran bulanan + daftar tanggungan)
 
 ### ⚙️ Pengaturan
-- [x] Pilih mata uang (IDR, USD, EUR, dll)
-- [x] Konfigurasi AI (base URL, API key, prompt) untuk saran keuangan otomatis
+- [x] Pilih mata uang (IDR, USD, EUR)
+- [x] Konfigurasi AI kustom (Base URL, API Key, Model, Custom Prompt)
+- [x] API Key dienkripsi AES-256-GCM sebelum disimpan, di-mask saat ditampilkan
 
 ### 🎨 UI/UX
 - [x] Mobile-first responsive design
@@ -147,6 +160,10 @@ go run ./cmd/server
 | `BCRYPT_ROUNDS` | Bcrypt cost | `12` |
 | `CORS_ORIGINS` | Allowed origins (comma-separated) | `http://localhost:5173` |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | - |
+| `AI_BASE_URL` | OpenAI-compatible API base URL | - |
+| `AI_API_KEY` | API key untuk AI provider | - |
+| `AI_MODEL` | Model AI yang digunakan | `gpt-4o-mini` |
+| `ENCRYPTION_KEY` | Key untuk enkripsi AES-256 (harus 32 karakter) | - |
 
 ---
 
@@ -260,6 +277,7 @@ Proyek ini di-host menggunakan **[DealCloud](https://dealcloud.id)** — Deploy 
 Dikembangkan oleh:
 - **[Cahrur Rozid](https://github.com/cahrur)**
 - **[DealTech](https://github.com/Deal-Tech)** — [tech.mudahdeal.com](https://tech.mudahdeal.com)
+- **[Claude Opus](https://claude.ai)** — AI Developer by Anthropic
 
 ## 🐛 Kontribusi & Laporan Bug
 

@@ -78,9 +78,6 @@ export default function DashboardPage({ onAddTransaction }) {
     return (
         <div className="page-container">
             <div className="page-header">
-                <p className="dashboard__greeting">
-                    {MONTHS[month]} {year}
-                </p>
                 <h1 className="page-title">Dashboard</h1>
             </div>
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import BottomNav from './components/layout/BottomNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -23,6 +23,7 @@ import SettingsPage from './pages/SettingsPage';
 import WalletsPage from './pages/WalletsPage';
 import DebtsPage from './pages/DebtsPage';
 import ObligationsPage from './pages/ObligationsPage';
+import AiPage from './pages/AiPage';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -59,13 +60,14 @@ function AppContent() {
     <div className="app">
       <main className="app__content">
         <Routes>
-          {/* Public routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* Public routes — redirect to home if already logged in */}
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
+          <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />} />
 
           {/* Protected routes */}
           <Route path="/" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/transactions" element={<ProtectedRoute><TransactionsPage /></ProtectedRoute>} />
+          <Route path="/ai" element={<ProtectedRoute><AiPage /></ProtectedRoute>} />
           <Route path="/wallets" element={<ProtectedRoute><WalletsPage /></ProtectedRoute>} />
           <Route path="/debts" element={<ProtectedRoute><DebtsPage /></ProtectedRoute>} />
           <Route path="/obligations" element={<ProtectedRoute><ObligationsPage /></ProtectedRoute>} />

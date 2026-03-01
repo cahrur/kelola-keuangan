@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X, LogOut, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '../../stores/authStore';
 import './BottomNav.css';
@@ -7,11 +7,12 @@ import './BottomNav.css';
 const MAIN_NAV = [
     { to: '/', icon: LayoutDashboard, label: 'Home' },
     { to: '/transactions', icon: ArrowLeftRight, label: 'Transaksi' },
+    { to: '/ai', icon: Sparkles, label: 'AI' },
     { to: '/wallets', icon: Wallet, label: 'Kantong' },
-    { to: '/debts', icon: HandCoins, label: 'Hutang' },
 ];
 
 const MORE_NAV = [
+    { to: '/debts', icon: HandCoins, label: 'Hutang' },
     { to: '/obligations', icon: CalendarCheck, label: 'Tanggungan' },
     { to: '/categories', icon: Tag, label: 'Kategori' },
     { to: '/budgets', icon: PiggyBank, label: 'Anggaran' },
