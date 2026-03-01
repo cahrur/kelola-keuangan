@@ -138,6 +138,8 @@ CORS_ORIGINS=https://yourdomain.com
 GOOGLE_CLIENT_ID=<google-client-id>.apps.googleusercontent.com
 ```
 
+> **Catatan:** `GOOGLE_CLIENT_ID` cukup **1 kali** saja. Dockerfile otomatis meneruskannya ke frontend (sebagai `VITE_GOOGLE_CLIENT_ID`) saat build, dan backend membacanya saat runtime. Pastikan di Coolify, `GOOGLE_CLIENT_ID` di-set sebagai **Build Variable** (bukan hanya runtime) supaya Vite bisa membacanya saat `npm run build`.
+
 #### Port di Coolify:
 - **Ports Exposes**: `8000`
 - **Domains**: `https://yourdomain.com`

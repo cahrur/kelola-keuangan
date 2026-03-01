@@ -2,6 +2,12 @@
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 
+# Build args — Coolify passes these at build time
+# GOOGLE_CLIENT_ID is shared: Vite needs it at build time, Go needs it at runtime
+ARG GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+ENV VITE_API_URL=
+
 # Cache dependencies
 COPY package*.json ./
 RUN npm ci
