@@ -10,6 +10,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import EmptyState from '../components/ui/EmptyState';
+import CurrencyInput from '../components/ui/CurrencyInput';
 import './BudgetsPage.css';
 
 export default function BudgetsPage() {
@@ -201,15 +202,11 @@ export default function BudgetsPage() {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Batas Anggaran</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             placeholder="0"
                             value={formAmount}
-                            onChange={(e) => setFormAmount(e.target.value)}
-                            min="0"
-                            step="any"
+                            onChange={(val) => setFormAmount(val)}
                             required
-                            inputMode="decimal"
                         />
                     </div>
                     <Button type="submit" fullWidth className="mt-md">

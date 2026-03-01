@@ -9,13 +9,16 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
+import CurrencyInput from '../components/ui/CurrencyInput';
 import './TransactionsPage.css';
 
-export default function TransactionsPage({ showForm, setShowForm }) {
+export default function TransactionsPage() {
     const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
         useTransactionStore();
     const { categories, getCategoryById } = useCategoryStore();
     const { currency } = useSettingsStore();
+
+    const [showForm, setShowForm] = useState(false);
 
     const [search, setSearch] = useState('');
     const [filterType, setFilterType] = useState('');
@@ -80,7 +83,7 @@ export default function TransactionsPage({ showForm, setShowForm }) {
             type: formType,
             amount: parseFloat(formAmount),
             description: formDesc,
-            categoryId: formCategory,
+            categoryId: parseInt(formCategory),
             date: formDate,
         };
 
@@ -270,15 +273,11 @@ export default function TransactionsPage({ showForm, setShowForm }) {
 
                     <div className="form-group">
                         <label className="form-label">Jumlah</label>
-                        <input
-                            type="number"
+                        <CurrencyInput
                             placeholder="0"
                             value={formAmount}
-                            onChange={(e) => setFormAmount(e.target.value)}
-                            min="0"
-                            step="any"
+                            onChange={(val) => setFormAmount(val)}
                             required
-                            inputMode="decimal"
                         />
                     </div>
 

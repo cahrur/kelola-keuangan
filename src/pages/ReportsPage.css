@@ -3,6 +3,12 @@
     padding: var(--space-sm) 0;
 }
 
+.chart-card__total {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    padding: 0 var(--space-md) var(--space-xs);
+}
+
 /* Pie center label */
 .pie-center {
     position: absolute;

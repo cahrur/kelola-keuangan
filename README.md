@@ -4,15 +4,83 @@ Aplikasi pencatatan keuangan pribadi yang modern dan lengkap. Full-stack: React 
 
 ## Features
 
-- [x] Auth — Login/Register email+password, Google OAuth, JWT access+refresh token
-- [x] Dashboard — ringkasan saldo, pemasukan, pengeluaran, chart tren bulanan
-- [x] Transaksi — CRUD lengkap, filter tipe/kategori/tanggal, search
-- [x] Kategori — kelola kategori pemasukan & pengeluaran dengan warna
-- [x] Anggaran — budget bulanan per kategori, progress bar, status alert
-- [x] Kantong — kelola dompet/rekening, transfer antar kantong
-- [x] Hutang — catat hutang dan piutang, tracking pembayaran
-- [x] Tanggungan — kelola tagihan berulang (bulanan/tahunan), checklist bayar
-- [x] Laporan — chart pie (per kategori), bar chart (bulanan), ringkasan
+### 🔐 Autentikasi
+- [x] Login & Register dengan email + password
+- [x] Login dengan Google OAuth (langsung masuk tanpa tanya nomor WA untuk akun yang sudah terdaftar)
+- [x] Register dengan Google OAuth + input nomor WhatsApp
+- [x] JWT access token + refresh token
+- [x] Auto-refresh token saat expired
+
+### 📊 Dashboard
+- [x] Ringkasan saldo total dari semua kantong
+- [x] Total pemasukan & pengeluaran bulan ini
+- [x] Chart tren bulanan (bar chart Pemasukan vs Pengeluaran)
+- [x] Daftar transaksi terbaru
+
+### 💸 Transaksi
+- [x] CRUD lengkap (tambah, edit, hapus)
+- [x] Tipe: Pemasukan & Pengeluaran
+- [x] Filter berdasarkan tipe, kategori, tanggal
+- [x] Pencarian berdasarkan deskripsi/jumlah
+- [x] Input nominal otomatis format Rupiah (10000 → 10.000)
+
+### 🏷️ Kategori
+- [x] Kelola kategori pemasukan & pengeluaran
+- [x] Pilih warna kustom untuk setiap kategori
+- [x] Ikon berdasarkan huruf pertama nama kategori
+
+### 📋 Anggaran (Budget)
+- [x] Budget bulanan per kategori pengeluaran
+- [x] Progress bar visual penggunaan budget
+- [x] Status alert: Aman / Hampir / Melebihi
+- [x] Ringkasan total anggaran vs total terpakai
+- [x] Filter bulan & tahun
+
+### 👛 Kantong (Wallet)
+- [x] Kelola dompet / rekening / kantong uang
+- [x] Transfer antar kantong
+- [x] Sesuaikan saldo (tambah / kurangi)
+- [x] Total saldo dari semua kantong
+- [x] Warna kustom untuk setiap kantong
+- [x] Input nominal otomatis format Rupiah
+
+### 🤝 Hutang & Piutang
+- [x] Catat hutang saya (i_owe) & piutang orang (they_owe)
+- [x] Pembayaran parsial (cicilan) dengan tracking progress
+- [x] Tandai lunas langsung
+- [x] Progress bar sisa hutang/piutang
+- [x] Tanggal jatuh tempo (opsional)
+- [x] Input nominal otomatis format Rupiah
+
+### 📅 Tanggungan (Kewajiban Rutin)
+- [x] Catat tagihan berulang: bulanan atau tahunan
+- [x] Checklist bayar per periode
+- [x] Catat otomatis ke transaksi pengeluaran saat dicentang
+- [x] Progress pembayaran (berapa periode terbayar)
+- [x] Tanggal mulai & selesai (opsional, bisa selamanya)
+- [x] Input nominal otomatis format Rupiah
+
+### 📈 Laporan
+- [x] Chart tren bulanan (bar chart Pemasukan vs Pengeluaran per bulan)
+- [x] Pie chart breakdown per kategori (Pemasukan / Pengeluaran)
+- [x] **Trend Pemasukan** — line chart harian per kategori, filter bulan/tahun
+- [x] **Trend Pengeluaran** — line chart harian per kategori, filter bulan/tahun
+- [x] **Trend Tanggungan** — riwayat pembayaran per tanggungan (12 periode terakhir)
+- [x] Ringkasan kantong (total saldo + detail per kantong)
+- [x] Ringkasan hutang & piutang (total + jumlah aktif)
+- [x] Ringkasan tanggungan (est. pengeluaran bulanan + daftar tanggungan)
+
+### ⚙️ Pengaturan
+- [x] Pilih mata uang (IDR, USD, EUR, dll)
+- [x] Konfigurasi AI (base URL, API key, prompt) untuk saran keuangan otomatis
+
+### 🎨 UI/UX
+- [x] Mobile-first responsive design
+- [x] Dark theme modern
+- [x] Navigasi bottom bar
+- [x] Smooth animations & transitions
+- [x] Input nominal auto-format Rupiah di semua field uang
+- [x] Empty state dengan ilustrasi untuk halaman kosong
 
 ## Tech Stack
 

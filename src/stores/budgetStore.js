@@ -17,8 +17,8 @@ const useBudgetStore = create((set, get) => ({
     setBudget: async (budget) => {
         // Request body auto-snakeized by interceptor — just use camelCase
         const { data } = await api.post('/budgets', {
-            categoryId: budget.categoryId,
-            amount: budget.amount,
+            categoryId: parseInt(budget.categoryId),
+            amount: parseFloat(budget.amount),
             month: budget.month,
             year: budget.year,
         });

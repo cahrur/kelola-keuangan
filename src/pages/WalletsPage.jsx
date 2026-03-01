@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
+import CurrencyInput from '../components/ui/CurrencyInput';
 import './WalletsPage.css';
 
 const COLOR_OPTIONS = [
@@ -174,7 +175,7 @@ export default function WalletsPage() {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Saldo Awal</label>
-                        <input type="number" placeholder="0" value={formBalance} onChange={(e) => setFormBalance(e.target.value)} inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={formBalance} onChange={(val) => setFormBalance(val)} />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Warna</label>
@@ -213,7 +214,7 @@ export default function WalletsPage() {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Jumlah</label>
-                        <input type="number" placeholder="0" value={transferAmount} onChange={(e) => setTransferAmount(e.target.value)} min="0" step="any" required inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={transferAmount} onChange={(val) => setTransferAmount(val)} required />
                     </div>
                     <Button type="submit" fullWidth className="mt-md">Transfer</Button>
                 </form>
@@ -232,7 +233,7 @@ export default function WalletsPage() {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Jumlah</label>
-                        <input type="number" placeholder="0" value={adjustAmount} onChange={(e) => setAdjustAmount(e.target.value)} min="0" step="any" required inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={adjustAmount} onChange={(val) => setAdjustAmount(val)} required />
                     </div>
                     <Button type="submit" fullWidth className="mt-md">Sesuaikan</Button>
                 </form>

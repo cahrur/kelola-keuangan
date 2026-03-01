@@ -12,10 +12,6 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    // Google OAuth: phone step
-    const [googleStep, setGoogleStep] = useState(null); // null | { credential }
-    const [googlePhone, setGooglePhone] = useState('');
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -30,17 +26,12 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleSuccess = (credentialResponse) => {
-        // Show phone input step before completing Google login
-        setGoogleStep({ credential: credentialResponse.credential });
-    };
-
-    const handleGoogleComplete = async (e) => {
-        e.preventDefault();
+    const handleGoogleSuccess = async (credentialResponse) => {
         setError('');
         setLoading(true);
         try {
-            await googleLogin(googleStep.credential, googlePhone);
+            // Login: langsung masuk tanpa tanya nomor WA (akun sudah ada)
+            await googleLogin(credentialResponse.credential, '');
             navigate('/');
         } catch (err) {
             setError(err.response?.data?.message || 'Login Google gagal');
@@ -48,48 +39,6 @@ export default function LoginPage() {
             setLoading(false);
         }
     };
-
-    // Google phone step
-    if (googleStep) {
-        return (
-            <div className="auth-page">
-                <div className="auth-card">
-                    <div className="auth-card__header">
-                        <div className="auth-card__logo">💰</div>
-                        <h1 className="auth-card__title">Masuk dengan Google</h1>
-                        <p className="auth-card__subtitle">Masukkan nomor WhatsApp kamu</p>
-                    </div>
-                    <form className="auth-google-phone" onSubmit={handleGoogleComplete}>
-                        <div className="auth-google-phone__info">
-                            Nomor WA digunakan untuk notifikasi & pemulihan akun
-                        </div>
-                        {error && <div className="auth-form__error">{error}</div>}
-                        <div className="auth-form__group">
-                            <label className="auth-form__label">Nomor WhatsApp</label>
-                            <input
-                                className="auth-form__input"
-                                type="tel"
-                                placeholder="08xxxxxxxxxx"
-                                value={googlePhone}
-                                onChange={(e) => setGooglePhone(e.target.value)}
-                            />
-                        </div>
-                        <button className="auth-form__submit" type="submit" disabled={loading}>
-                            {loading ? 'Memproses...' : 'Lanjutkan'}
-                        </button>
-                        <button
-                            type="button"
-                            className="auth-form__submit"
-                            style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
-                            onClick={() => setGoogleStep(null)}
-                        >
-                            Kembali
-                        </button>
-                    </form>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="auth-page">

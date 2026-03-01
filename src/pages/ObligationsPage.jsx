@@ -9,6 +9,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
+import CurrencyInput from '../components/ui/CurrencyInput';
 import './ObligationsPage.css';
 
 export default function ObligationsPage() {
@@ -247,7 +248,7 @@ export default function ObligationsPage() {
 
                     <div className="form-group">
                         <label className="form-label">Nominal</label>
-                        <input type="number" placeholder="0" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} min="0" step="any" required inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={formAmount} onChange={(val) => setFormAmount(val)} required />
                     </div>
 
                     <div className="form-row">

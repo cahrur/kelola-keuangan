@@ -8,10 +8,11 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
+import CurrencyInput from '../components/ui/CurrencyInput';
 import './DebtsPage.css';
 
 export default function DebtsPage() {
-    const { debts, addDebt, deleteDebt, addPayment, markAsPaid, getTotalOwed, getTotalLent, getRemainingAmount, getPaidAmount } = useDebtStore();
+    const { debts, addDebt, updateDebt, deleteDebt, markAsPaid, getTotalOwed, getTotalLent, getRemaining, getPaid } = useDebtStore();
     const { currency } = useSettingsStore();
 
     const [showForm, setShowForm] = useState(false);
@@ -71,7 +72,12 @@ export default function DebtsPage() {
     const handlePayment = (e) => {
         e.preventDefault();
         if (!paymentAmount || !selectedDebt) return;
-        addPayment(selectedDebt.id, parseFloat(paymentAmount), paymentDate);
+        const newPaid = (selectedDebt.paidAmount || 0) + parseFloat(paymentAmount);
+        const isFullyPaid = newPaid >= selectedDebt.amount;
+        updateDebt(selectedDebt.id, {
+            paidAmount: newPaid,
+            status: isFullyPaid ? 'paid' : 'active',
+        });
         setShowPayment(false);
         setSelectedDebt(null);
         setPaymentAmount('');
@@ -92,8 +98,8 @@ export default function DebtsPage() {
     };
 
     const renderDebtCard = (debt) => {
-        const remaining = getRemainingAmount(debt.id);
-        const paid = getPaidAmount(debt.id);
+        const remaining = getRemaining(debt.id);
+        const paid = getPaid(debt.id);
         const percentage = debt.amount > 0 ? (paid / debt.amount) * 100 : 0;
         const isPaid = debt.status === 'paid';
         const isOverdue = !isPaid && debt.dueDate && new Date(debt.dueDate) < new Date();
@@ -155,18 +161,7 @@ export default function DebtsPage() {
                     </p>
                 )}
 
-                {/* Payment history */}
-                {debt.payments.length > 0 && (
-                    <div className="debt-payments">
-                        <span className="debt-payments__title">Riwayat Pembayaran</span>
-                        {debt.payments.map((p) => (
-                            <div key={p.id} className="debt-payments__item">
-                                <span>{formatDate(p.date)}</span>
-                                <span className="text-income">{formatCurrency(p.amount, currency)}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
+
 
                 <div className="debt-card__actions">
                     {!isPaid && (
@@ -279,7 +274,7 @@ export default function DebtsPage() {
 
                     <div className="form-group">
                         <label className="form-label">Jumlah</label>
-                        <input type="number" placeholder="0" value={formAmount} onChange={(e) => setFormAmount(e.target.value)} min="0" step="any" required inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={formAmount} onChange={(val) => setFormAmount(val)} required />
                     </div>
 
                     <div className="form-group">
@@ -307,12 +302,12 @@ export default function DebtsPage() {
                 <form onSubmit={handlePayment}>
                     {selectedDebt && (
                         <p className="text-muted mb-md" style={{ fontSize: 'var(--font-sm)' }}>
-                            Sisa: <strong className="text-expense">{formatCurrency(getRemainingAmount(selectedDebt.id), currency)}</strong>
+                            Sisa: <strong className="text-expense">{formatCurrency(getRemaining(selectedDebt.id), currency)}</strong>
                         </p>
                     )}
                     <div className="form-group">
                         <label className="form-label">Jumlah Bayar</label>
-                        <input type="number" placeholder="0" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} min="0" step="any" required inputMode="decimal" />
+                        <CurrencyInput placeholder="0" value={paymentAmount} onChange={(val) => setPaymentAmount(val)} required />
                     </div>
                     <div className="form-group">
                         <label className="form-label">Tanggal Bayar</label>

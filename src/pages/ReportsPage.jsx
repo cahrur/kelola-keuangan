@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 import { Wallet, HandCoins, CalendarCheck, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
@@ -11,20 +11,26 @@ import { formatCurrency } from '../utils/formatters';
 import { MONTHS, CHART_COLORS } from '../utils/constants';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
+import { TrendingUp, TrendingDown, CalendarCheck as CalendarCheckIcon } from 'lucide-react';
 import './ReportsPage.css';
 
 export default function ReportsPage() {
     const { transactions, getMonthlyData, getCategoryBreakdown } = useTransactionStore();
-    const { getCategoryById } = useCategoryStore();
+    const { categories, getCategoryById } = useCategoryStore();
     const { currency } = useSettingsStore();
     const { debts, getTotalOwed, getTotalLent } = useDebtStore();
     const { wallets, getTotalBalance } = useWalletStore();
-    const { obligations, getActiveCount, getTotalMonthlyAmount } = useObligationStore();
+    const { obligations, getActiveCount, getTotalMonthlyAmount, getPeriodsForObligation, isPeriodPaid } = useObligationStore();
 
     const now = new Date();
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
     const [reportType, setReportType] = useState('expense');
+
+    // Trend filters
+    const [trendIncomeCategory, setTrendIncomeCategory] = useState('');
+    const [trendExpenseCategory, setTrendExpenseCategory] = useState('');
+    const [trendObligationId, setTrendObligationId] = useState('');
 
     // Monthly bar data
     const monthlyData = useMemo(() => {
@@ -76,6 +82,35 @@ export default function ReportsPage() {
     };
 
     const hasTransactions = transactions.length > 0;
+
+    // Helper: compute daily trend data for a type+category in a specific month/year
+    const getDailyTrend = (type, categoryId) => {
+        if (!categoryId) return [];
+        const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+        const daily = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const total = transactions
+                .filter((t) => {
+                    return t.type === type && t.categoryId === parseInt(categoryId) && t.date === dateStr;
+                })
+                .reduce((s, t) => s + t.amount, 0);
+            daily.push({ day: d, amount: total });
+        }
+        return daily;
+    };
+
+    // Trend data
+    const incomeTrendData = useMemo(() => getDailyTrend('income', trendIncomeCategory), [transactions, selectedMonth, selectedYear, trendIncomeCategory]);
+    const expenseTrendData = useMemo(() => getDailyTrend('expense', trendExpenseCategory), [transactions, selectedMonth, selectedYear, trendExpenseCategory]);
+
+    // Total untuk trend
+    const incomeTrendTotal = incomeTrendData.reduce((s, d) => s + d.amount, 0);
+    const expenseTrendTotal = expenseTrendData.reduce((s, d) => s + d.amount, 0);
+
+    // Categories filtered by type
+    const incomeCategories = useMemo(() => categories.filter((c) => c.type === 'income'), [categories]);
+    const expenseCategories = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
 
     return (
         <div className="page-container">
@@ -193,6 +228,132 @@ export default function ReportsPage() {
                             </div>
                         </>
                     )}
+                </div>
+
+                {/* Trend Pemasukan */}
+                <div className="mb-lg">
+                    <h2 className="section-title"><TrendingUp size={16} /> Trend Pemasukan</h2>
+                    <div className="month-selector mb-sm">
+                        <select value={trendIncomeCategory} onChange={(e) => setTrendIncomeCategory(e.target.value)}>
+                            <option value="">Pilih Kategori Pemasukan</option>
+                            {incomeCategories.map((c) => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {!trendIncomeCategory ? (
+                        <Card>
+                            <p className="text-muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+                                Pilih kategori untuk melihat trend pemasukan
+                            </p>
+                        </Card>
+                    ) : incomeTrendTotal === 0 ? (
+                        <Card>
+                            <p className="text-muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+                                Tidak ada data pemasukan untuk kategori ini
+                            </p>
+                        </Card>
+                    ) : (
+                        <Card className="chart-card">
+                            <p className="chart-card__total text-income">Total: {formatCurrency(incomeTrendTotal, currency)}</p>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <LineChart data={incomeTrendData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#8a9290', fontSize: 10 }} />
+                                    <YAxis hide />
+                                    <Tooltip content={<BarTooltip />} />
+                                    <Line type="monotone" dataKey="amount" stroke="#22c55e" strokeWidth={2} dot={false} name="Pemasukan" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </Card>
+                    )}
+                </div>
+
+                {/* Trend Pengeluaran */}
+                <div className="mb-lg">
+                    <h2 className="section-title"><TrendingDown size={16} /> Trend Pengeluaran</h2>
+                    <div className="month-selector mb-sm">
+                        <select value={trendExpenseCategory} onChange={(e) => setTrendExpenseCategory(e.target.value)}>
+                            <option value="">Pilih Kategori Pengeluaran</option>
+                            {expenseCategories.map((c) => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {!trendExpenseCategory ? (
+                        <Card>
+                            <p className="text-muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+                                Pilih kategori untuk melihat trend pengeluaran
+                            </p>
+                        </Card>
+                    ) : expenseTrendTotal === 0 ? (
+                        <Card>
+                            <p className="text-muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+                                Tidak ada data pengeluaran untuk kategori ini
+                            </p>
+                        </Card>
+                    ) : (
+                        <Card className="chart-card">
+                            <p className="chart-card__total text-expense">Total: {formatCurrency(expenseTrendTotal, currency)}</p>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <LineChart data={expenseTrendData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#8a9290', fontSize: 10 }} />
+                                    <YAxis hide />
+                                    <Tooltip content={<BarTooltip />} />
+                                    <Line type="monotone" dataKey="amount" stroke="#98503b" strokeWidth={2} dot={false} name="Pengeluaran" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </Card>
+                    )}
+                </div>
+
+                {/* Trend Tanggungan */}
+                <div className="mb-lg">
+                    <h2 className="section-title"><CalendarCheckIcon size={16} /> Trend Tanggungan</h2>
+                    <div className="month-selector mb-sm">
+                        <select value={trendObligationId} onChange={(e) => setTrendObligationId(e.target.value)}>
+                            <option value="">Pilih Tanggungan</option>
+                            {obligations.map((o) => (
+                                <option key={o.id} value={o.id}>{o.name} — {formatCurrency(o.amount, currency)}/{o.type === 'monthly' ? 'bulan' : 'tahun'}</option>
+                            ))}
+                        </select>
+                    </div>
+                    {!trendObligationId ? (
+                        <Card>
+                            <p className="text-muted" style={{ textAlign: 'center', padding: '24px 0' }}>
+                                Pilih tanggungan untuk melihat riwayat pembayaran
+                            </p>
+                        </Card>
+                    ) : (() => {
+                        const obl = obligations.find((o) => String(o.id) === trendObligationId);
+                        if (!obl) return null;
+                        const periods = getPeriodsForObligation(obl);
+                        const data = periods.map((p) => ({
+                            name: p.label.length > 8 ? p.label.slice(0, 8) : p.label,
+                            status: isPeriodPaid(obl.id, p.key) ? 1 : 0,
+                        }));
+                        const paidCount = data.filter((d) => d.status === 1).length;
+                        return (
+                            <Card className="chart-card">
+                                <p className="chart-card__total">
+                                    <span className="text-income">{paidCount} terbayar</span>
+                                    <span className="text-muted"> / {data.length} periode</span>
+                                </p>
+                                <ResponsiveContainer width="100%" height={160}>
+                                    <BarChart data={data.slice(-12)}>
+                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#8a9290', fontSize: 9 }} />
+                                        <YAxis hide />
+                                        <Bar dataKey="status" radius={[4, 4, 0, 0]}>
+                                            {data.slice(-12).map((entry, i) => (
+                                                <Cell key={i} fill={entry.status ? '#22c55e' : 'rgba(255,255,255,0.1)'} />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </Card>
+                        );
+                    })()}
                 </div>
             </>)}
 
