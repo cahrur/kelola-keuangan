@@ -131,7 +131,6 @@ func Setup(db *gorm.DB) *gin.Engine {
 	// Check if dist/ directory exists (production build)
 	r.Static("/assets", "./dist/assets")
 	r.StaticFile("/favicon.ico", "./dist/favicon.ico")
-	r.StaticFile("/logo.png", "./dist/logo.png")
 	r.StaticFile("/manifest.json", "./dist/manifest.json")
 
 	// SPA fallback: serve index.html for all non-API, non-asset routes

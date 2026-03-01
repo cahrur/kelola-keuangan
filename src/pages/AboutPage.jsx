@@ -2,6 +2,7 @@ import { Building2, Mail, Sparkles, Wallet, PieChart, Bot, Shield, BarChart3, Gl
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
+import logoImg from '../assets/logo.png';
 import './AboutPage.css';
 
 const APP_VERSION = '1.0.0';
@@ -22,7 +23,7 @@ export default function AboutPage() {
 
             {/* App Identity */}
             <div className="about-hero animate-slide-up">
-                <img src="/logo.png" alt="Kelola Keuangan" className="about-hero__logo" />
+                <img src={logoImg} alt="Kelola Keuangan" className="about-hero__logo" />
                 <h2 className="about-hero__name">Kelola Keuangan</h2>
                 <span className="about-hero__version">v{APP_VERSION}</span>
                 <p className="about-hero__tagline">Atur keuanganmu dengan mudah, cerdas, dan aman.</p>

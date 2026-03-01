@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import logoImg from '../../assets/logo.png';
 import './SplashScreen.css';
 
 export default function SplashScreen({ onFinish }) {
@@ -23,7 +24,7 @@ export default function SplashScreen({ onFinish }) {
         <div className={`splash splash--${phase}`}>
             <div className="splash__content">
                 <div className="splash__logo-wrapper">
-                    <img className="splash__logo" src="/logo.png" alt="Kelola Keuangan" />
+                    <img className="splash__logo" src={logoImg} alt="Kelola Keuangan" />
                     <div className="splash__ring" />
                     <div className="splash__ring splash__ring--2" />
                 </div>

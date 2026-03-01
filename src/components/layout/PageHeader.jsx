@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, Settings, Info, LogOut } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
+import logoImg from '../../assets/logo.png';
 
 const DRAWER_NAV = [
     { to: '/debts', icon: HandCoins, label: 'Hutang' },
@@ -46,8 +47,11 @@ export default function PageHeader({ title, subtitle, actions }) {
                     <div className="page-drawer" onClick={(e) => e.stopPropagation()}>
                         {/* Logo */}
                         <div className="page-drawer__logo">
-                            <img src="/logo.png" alt="Kelola Keuangan" className="page-drawer__logo-img" />
-                            <span className="page-drawer__logo-text">Kelola Keuangan</span>
+                            <img src={logoImg} alt="Kelola Keuangan" className="page-drawer__logo-img" />
+                            <div style={{ textAlign: 'center' }}>
+                                <span className="page-drawer__logo-text">Kelola Keuangan</span>
+                                <span className="page-drawer__logo-sub">DealTech — PT MUDAHDEAL DIGITAL GRUP</span>
+                            </div>
                         </div>
 
                         {/* Nav items */}

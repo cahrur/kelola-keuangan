@@ -207,6 +207,15 @@ img {
     font-size: var(--font-md);
     font-weight: 700;
     color: var(--text-primary);
+    text-align: center;
+}
+
+.page-drawer__logo-sub {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 400;
+    text-align: center;
 }
 
 .page-drawer__nav {
