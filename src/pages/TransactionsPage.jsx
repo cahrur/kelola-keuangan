@@ -10,6 +10,7 @@ import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
 import CurrencyInput from '../components/ui/CurrencyInput';
+import PageHeader from '../components/layout/PageHeader';
 import './TransactionsPage.css';
 
 export default function TransactionsPage() {
@@ -109,10 +110,7 @@ export default function TransactionsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Transaksi</h1>
-                <p className="page-subtitle">{transactions.length} transaksi tercatat</p>
-            </div>
+            <PageHeader title="Transaksi" subtitle={`${transactions.length} transaksi tercatat`} />
 
             {/* Search & Filter Bar */}
             <div className="search-bar">

@@ -9,6 +9,7 @@ import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
 import CurrencyInput from '../components/ui/CurrencyInput';
+import PageHeader from '../components/layout/PageHeader';
 import './DebtsPage.css';
 
 export default function DebtsPage() {
@@ -184,10 +185,7 @@ export default function DebtsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Hutang</h1>
-                <p className="page-subtitle">Kelola hutang piutang</p>
-            </div>
+            <PageHeader title="Hutang" subtitle="Kelola hutang piutang" />
 
             {/* Summary */}
             <div className="grid-2 mb-md">

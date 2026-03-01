@@ -10,6 +10,7 @@ import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
 import CurrencyInput from '../components/ui/CurrencyInput';
+import PageHeader from '../components/layout/PageHeader';
 import './ObligationsPage.css';
 
 export default function ObligationsPage() {
@@ -177,10 +178,7 @@ export default function ObligationsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Tanggungan</h1>
-                <p className="page-subtitle">Kelola tagihan & kewajiban rutin</p>
-            </div>
+            <PageHeader title="Tanggungan" subtitle="Kelola tagihan & kewajiban rutin" />
 
             {/* Summary */}
             <Card glow className="obligation-summary animate-scale-in">

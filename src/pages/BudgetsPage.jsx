@@ -10,6 +10,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/layout/PageHeader';
 import CurrencyInput from '../components/ui/CurrencyInput';
 import './BudgetsPage.css';
 
@@ -62,10 +63,7 @@ export default function BudgetsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Anggaran</h1>
-                <p className="page-subtitle">Kelola budget pengeluaran bulanan</p>
-            </div>
+            <PageHeader title="Anggaran" subtitle="Kelola budget pengeluaran bulanan" />
 
             {/* Month Selector */}
             <div className="month-selector">

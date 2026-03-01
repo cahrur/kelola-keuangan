@@ -11,6 +11,7 @@ import { formatCurrency } from '../utils/formatters';
 import { MONTHS, CHART_COLORS } from '../utils/constants';
 import Card from '../components/ui/Card';
 import EmptyState from '../components/ui/EmptyState';
+import PageHeader from '../components/layout/PageHeader';
 import { TrendingUp, TrendingDown, CalendarCheck as CalendarCheckIcon } from 'lucide-react';
 import './ReportsPage.css';
 
@@ -114,10 +115,7 @@ export default function ReportsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Laporan</h1>
-                <p className="page-subtitle">Analisis keuangan kamu</p>
-            </div>
+            <PageHeader title="Laporan" subtitle="Analisis keuangan kamu" />
 
             {hasTransactions && (<>
                 {/* Year Selector */}

@@ -8,6 +8,7 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import CurrencyInput from '../components/ui/CurrencyInput';
+import PageHeader from '../components/layout/PageHeader';
 import './WalletsPage.css';
 
 const COLOR_OPTIONS = [
@@ -108,10 +109,7 @@ export default function WalletsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Kantong</h1>
-                <p className="page-subtitle">Kelola saldo di berbagai kantong</p>
-            </div>
+            <PageHeader title="Kantong" subtitle="Kelola saldo di berbagai kantong" />
 
             {/* Total Balance */}
             <Card glow className="wallet-total animate-scale-in">

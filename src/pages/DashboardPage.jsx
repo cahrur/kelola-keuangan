@@ -9,6 +9,7 @@ import { formatCurrency, formatShortDate } from '../utils/formatters';
 import { MONTHS } from '../utils/constants';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import PageHeader from '../components/layout/PageHeader';
 import './DashboardPage.css';
 
 export default function DashboardPage({ onAddTransaction }) {
@@ -77,9 +78,7 @@ export default function DashboardPage({ onAddTransaction }) {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Dashboard</h1>
-            </div>
+            <PageHeader title="Dashboard" />
 
             {/* AI Suggestions */}
             <div className="ai-suggest animate-slide-up">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Settings, DollarSign, Bot, Eye, EyeOff, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import useSettingsStore from '../stores/settingsStore';
 import useAIStore from '../stores/aiStore';
+import PageHeader from '../components/layout/PageHeader';
 import './SettingsPage.css';
 
 export default function SettingsPage() {
@@ -58,9 +59,7 @@ export default function SettingsPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Pengaturan</h1>
-            </div>
+            <PageHeader title="Pengaturan" />
 
             {/* Currency */}
             <div className="settings-section">

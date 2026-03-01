@@ -7,6 +7,7 @@ import Modal from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import { generateId } from '../utils/formatters';
 import './CategoriesPage.css';
+import PageHeader from '../components/layout/PageHeader';
 
 const ICON_OPTIONS = [
     'Briefcase', 'Laptop', 'TrendingUp', 'Plus', 'UtensilsCrossed', 'Car',
@@ -106,10 +107,7 @@ export default function CategoriesPage() {
 
     return (
         <div className="page-container">
-            <div className="page-header">
-                <h1 className="page-title">Kategori</h1>
-                <p className="page-subtitle">Kelola kategori pemasukan & pengeluaran</p>
-            </div>
+            <PageHeader title="Kategori" subtitle="Kelola kategori pemasukan & pengeluaran" />
 
             <Button fullWidth className="mb-lg" onClick={() => { resetForm(); setShowForm(true); }} icon={<Plus size={18} />}>
                 Tambah Kategori
