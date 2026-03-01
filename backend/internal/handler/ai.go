@@ -278,8 +278,27 @@ func (h *AIHandler) resolveAIConfig(userID uint) (baseURL, apiKey, model_ string
 
 func (h *AIHandler) buildFinancialContext(userID uint) string {
 	var sb strings.Builder
+	now := time.Now()
+	currentMonth := int(now.Month())
+	currentYear := now.Year()
+	prevMonth := currentMonth - 1
+	prevYear := currentYear
+	if prevMonth == 0 {
+		prevMonth = 12
+		prevYear--
+	}
+	currentMonthPrefix := fmt.Sprintf("%04d-%02d", currentYear, currentMonth)
+	prevMonthPrefix := fmt.Sprintf("%04d-%02d", prevYear, prevMonth)
 
-	// Wallets summary
+	// Build category name lookup (once)
+	var allCats []model.Category
+	h.DB.Where("user_id = ?", userID).Find(&allCats)
+	catLookup := make(map[uint]string)
+	for _, c := range allCats {
+		catLookup[c.ID] = c.Name
+	}
+
+	// ---- WALLETS ----
 	var wallets []model.Wallet
 	h.DB.Where("user_id = ?", userID).Find(&wallets)
 	if len(wallets) > 0 {
@@ -289,31 +308,131 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 			sb.WriteString(fmt.Sprintf("- %s: Rp %.0f\n", w.Name, w.Balance))
 			totalBalance += w.Balance
 		}
-		sb.WriteString(fmt.Sprintf("Total saldo: Rp %.0f\n\n", totalBalance))
+		sb.WriteString(fmt.Sprintf("TOTAL SALDO SEMUA KANTONG: Rp %.0f\n\n", totalBalance))
 	}
 
-	// Recent transactions (last 30) with category names
+	// ---- ALL TRANSACTIONS (pre-calculated) ----
 	var transactions []model.Transaction
-	h.DB.Where("user_id = ?", userID).Order("date DESC").Limit(30).Find(&transactions)
+	h.DB.Where("user_id = ?", userID).Order("date DESC").Find(&transactions)
+
 	if len(transactions) > 0 {
-		// Build category name lookup
-		var allCats []model.Category
-		h.DB.Where("user_id = ?", userID).Find(&allCats)
-		catLookup := make(map[uint]string)
-		for _, c := range allCats {
-			catLookup[c.ID] = c.Name
+		var (
+			allIncome       float64
+			allExpense      float64
+			monthIncome     float64
+			monthExpense    float64
+			prevMonIncome   float64
+			prevMonExpense  float64
+			monthCatIncome  = make(map[uint]float64)
+			monthCatExpense = make(map[uint]float64)
+		)
+
+		for _, t := range transactions {
+			if t.Type == "income" {
+				allIncome += t.Amount
+				if strings.HasPrefix(t.Date, currentMonthPrefix) {
+					monthIncome += t.Amount
+					monthCatIncome[t.CategoryID] += t.Amount
+				}
+				if strings.HasPrefix(t.Date, prevMonthPrefix) {
+					prevMonIncome += t.Amount
+				}
+			} else {
+				allExpense += t.Amount
+				if strings.HasPrefix(t.Date, currentMonthPrefix) {
+					monthExpense += t.Amount
+					monthCatExpense[t.CategoryID] += t.Amount
+				}
+				if strings.HasPrefix(t.Date, prevMonthPrefix) {
+					prevMonExpense += t.Amount
+				}
+			}
 		}
 
-		sb.WriteString("== 30 TRANSAKSI TERAKHIR ==\n")
-		totalIncome := 0.0
-		totalExpense := 0.0
-		for _, t := range transactions {
+		// Current month summary
+		sb.WriteString(fmt.Sprintf("== RINGKASAN BULAN INI (%02d/%d) [DIHITUNG SERVER] ==\n", currentMonth, currentYear))
+		sb.WriteString(fmt.Sprintf("Pemasukan bulan ini: Rp %.0f\n", monthIncome))
+		sb.WriteString(fmt.Sprintf("Pengeluaran bulan ini: Rp %.0f\n", monthExpense))
+		sb.WriteString(fmt.Sprintf("Selisih bulan ini: Rp %.0f\n", monthIncome-monthExpense))
+		sb.WriteString(fmt.Sprintf("Jumlah transaksi total: %d\n\n", len(transactions)))
+
+		// Previous month comparison
+		sb.WriteString(fmt.Sprintf("== BULAN LALU (%02d/%d) [DIHITUNG SERVER] ==\n", prevMonth, prevYear))
+		sb.WriteString(fmt.Sprintf("Pemasukan bulan lalu: Rp %.0f\n", prevMonIncome))
+		sb.WriteString(fmt.Sprintf("Pengeluaran bulan lalu: Rp %.0f\n\n", prevMonExpense))
+
+		// All-time totals
+		sb.WriteString("== TOTAL SEPANJANG WAKTU [DIHITUNG SERVER] ==\n")
+		sb.WriteString(fmt.Sprintf("Total pemasukan: Rp %.0f\n", allIncome))
+		sb.WriteString(fmt.Sprintf("Total pengeluaran: Rp %.0f\n", allExpense))
+		sb.WriteString(fmt.Sprintf("Total selisih: Rp %.0f\n\n", allIncome-allExpense))
+
+		// Per-category expense breakdown
+		type catAmount struct {
+			name   string
+			amount float64
+		}
+		if len(monthCatExpense) > 0 {
+			sb.WriteString(fmt.Sprintf("== PENGELUARAN PER KATEGORI BULAN INI (%02d/%d) [DIHITUNG SERVER] ==\n", currentMonth, currentYear))
+			var sorted []catAmount
+			for catID, amount := range monthCatExpense {
+				name := catLookup[catID]
+				if name == "" {
+					name = "Tanpa Kategori"
+				}
+				sorted = append(sorted, catAmount{name, amount})
+			}
+			for i := 0; i < len(sorted); i++ {
+				for j := i + 1; j < len(sorted); j++ {
+					if sorted[j].amount > sorted[i].amount {
+						sorted[i], sorted[j] = sorted[j], sorted[i]
+					}
+				}
+			}
+			for _, ca := range sorted {
+				pct := 0.0
+				if monthExpense > 0 {
+					pct = (ca.amount / monthExpense) * 100
+				}
+				sb.WriteString(fmt.Sprintf("- %s: Rp %.0f (%.1f%%)\n", ca.name, ca.amount, pct))
+			}
+			sb.WriteString("\n")
+		}
+
+		// Per-category income breakdown
+		if len(monthCatIncome) > 0 {
+			sb.WriteString(fmt.Sprintf("== PEMASUKAN PER KATEGORI BULAN INI (%02d/%d) [DIHITUNG SERVER] ==\n", currentMonth, currentYear))
+			var sorted []catAmount
+			for catID, amount := range monthCatIncome {
+				name := catLookup[catID]
+				if name == "" {
+					name = "Tanpa Kategori"
+				}
+				sorted = append(sorted, catAmount{name, amount})
+			}
+			for i := 0; i < len(sorted); i++ {
+				for j := i + 1; j < len(sorted); j++ {
+					if sorted[j].amount > sorted[i].amount {
+						sorted[i], sorted[j] = sorted[j], sorted[i]
+					}
+				}
+			}
+			for _, ca := range sorted {
+				sb.WriteString(fmt.Sprintf("- %s: Rp %.0f\n", ca.name, ca.amount))
+			}
+			sb.WriteString("\n")
+		}
+
+		// Recent 10 transactions for detail context
+		limit := 10
+		if len(transactions) < limit {
+			limit = len(transactions)
+		}
+		sb.WriteString("== 10 TRANSAKSI TERAKHIR ==\n")
+		for _, t := range transactions[:limit] {
 			typeLabel := "Pemasukan"
 			if t.Type == "expense" {
 				typeLabel = "Pengeluaran"
-				totalExpense += t.Amount
-			} else {
-				totalIncome += t.Amount
 			}
 			catName := catLookup[t.CategoryID]
 			if catName == "" {
@@ -323,15 +442,17 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 			if desc == "" {
 				desc = "-"
 			}
-			sb.WriteString(fmt.Sprintf("- [%s] %s: Rp %.0f | Kategori: %s | Ket: %s\n", t.Date, typeLabel, t.Amount, catName, desc))
+			sb.WriteString(fmt.Sprintf("- [%s] %s: Rp %.0f | %s | %s\n", t.Date, typeLabel, t.Amount, catName, desc))
 		}
-		sb.WriteString(fmt.Sprintf("Total pemasukan bulan ini: Rp %.0f | Total pengeluaran bulan ini: Rp %.0f\n\n", totalIncome, totalExpense))
+		sb.WriteString("\n")
 	}
 
-	// Debts
+	// ---- DEBTS ----
 	var debts []model.Debt
 	h.DB.Where("user_id = ? AND status = ?", userID, "active").Find(&debts)
 	if len(debts) > 0 {
+		totalHutang := 0.0
+		totalPiutang := 0.0
 		sb.WriteString("== HUTANG & PIUTANG AKTIF ==\n")
 		for _, d := range debts {
 			typeLabel := "Hutang saya"
@@ -339,50 +460,50 @@ func (h *AIHandler) buildFinancialContext(userID uint) string {
 				typeLabel = "Piutang"
 			}
 			remaining := d.Amount - d.PaidAmount
+			if d.Type == "they_owe" {
+				totalPiutang += remaining
+			} else {
+				totalHutang += remaining
+			}
 			sb.WriteString(fmt.Sprintf("- %s ke %s: Rp %.0f (sisa Rp %.0f)\n", typeLabel, d.Person, d.Amount, remaining))
 		}
-		sb.WriteString("\n")
+		sb.WriteString(fmt.Sprintf("TOTAL SISA HUTANG: Rp %.0f | TOTAL SISA PIUTANG: Rp %.0f\n\n", totalHutang, totalPiutang))
 	}
 
-	// Obligations
+	// ---- OBLIGATIONS ----
 	var obligations []model.Obligation
 	h.DB.Where("user_id = ?", userID).Find(&obligations)
 	if len(obligations) > 0 {
 		sb.WriteString("== TANGGUNGAN/KEWAJIBAN ==\n")
+		totalMonthly := 0.0
 		for _, o := range obligations {
 			sb.WriteString(fmt.Sprintf("- %s (%s): Rp %.0f\n", o.Name, o.Type, o.Amount))
+			if o.Type == "monthly" {
+				totalMonthly += o.Amount
+			}
 		}
-		sb.WriteString("\n")
+		sb.WriteString(fmt.Sprintf("TOTAL TANGGUNGAN BULANAN: Rp %.0f\n\n", totalMonthly))
 	}
 
-	// Budgets
+	// ---- BUDGETS (current month only) ----
 	var budgets []model.Budget
-	h.DB.Where("user_id = ?", userID).Find(&budgets)
+	h.DB.Where("user_id = ? AND month = ? AND year = ?", userID, currentMonth, currentYear).Find(&budgets)
 	if len(budgets) > 0 {
-		sb.WriteString("== ANGGARAN ==\n")
-		// Load categories for name lookup
-		var catMap = make(map[uint]string)
-		var cats []model.Category
-		h.DB.Where("user_id = ?", userID).Find(&cats)
-		for _, c := range cats {
-			catMap[c.ID] = c.Name
-		}
+		sb.WriteString(fmt.Sprintf("== ANGGARAN BULAN INI (%02d/%d) ==\n", currentMonth, currentYear))
 		for _, b := range budgets {
-			catName := catMap[b.CategoryID]
+			catName := catLookup[b.CategoryID]
 			if catName == "" {
 				catName = fmt.Sprintf("ID %d", b.CategoryID)
 			}
-			sb.WriteString(fmt.Sprintf("- %s: Rp %.0f/bulan (%d/%d)\n", catName, b.Amount, b.Month, b.Year))
+			sb.WriteString(fmt.Sprintf("- %s: Rp %.0f/bulan\n", catName, b.Amount))
 		}
 		sb.WriteString("\n")
 	}
 
-	// Categories
-	var categories []model.Category
-	h.DB.Where("user_id = ?", userID).Find(&categories)
-	if len(categories) > 0 {
+	// ---- CATEGORIES ----
+	if len(allCats) > 0 {
 		sb.WriteString("== KATEGORI ==\n")
-		for _, cat := range categories {
+		for _, cat := range allCats {
 			sb.WriteString(fmt.Sprintf("- [%s] %s\n", cat.Type, cat.Name))
 		}
 		sb.WriteString("\n")
@@ -567,21 +688,21 @@ func (h *AIHandler) generateInsight(userID uint) (string, error) {
 		return "📊 Data belum cukup untuk insight.\n💡 Mulai catat transaksi untuk mendapat analisis.\n✨ Tambahkan kantong dan kategori untuk pengelolaan lebih baik.", nil
 	}
 
-	systemMsg := `Kamu adalah analis keuangan yang SANGAT AKURAT. Aturan MUTLAK:
-1. HANYA gunakan angka, nama kantong, dan nama kategori yang TERTULIS PERSIS di data.
-2. JANGAN pernah mengarang, membulatkan, atau mengasumsikan angka/nama yang tidak ada.
-3. Jika data kurang, katakan "Data belum cukup" daripada menebak.
-4. Setiap angka yang kamu sebutkan HARUS bisa ditemukan di data yang diberikan.
-5. Setiap nama kantong/kategori yang kamu sebut HARUS ada di data.`
+	systemMsg := `Kamu adalah penyaji ringkasan keuangan. SEMUA angka di bawah sudah DIHITUNG oleh server dan PASTI BENAR.
+Aturan MUTLAK:
+1. Gunakan angka PERSIS seperti yang tertulis di data (bertanda [DIHITUNG SERVER]).
+2. JANGAN menghitung ulang, membulatkan, atau mengubah angka apapun.
+3. JANGAN mengarang nama kantong, kategori, atau angka yang tidak ada di data.
+4. Jika sebuah section tidak ada di data, JANGAN sebut topik tersebut.`
 
 	userMsg := `Berikan tepat 3 baris insight keuangan dari data di bawah. Format:
 - Tepat 3 baris, 1 insight per baris
 - Awali setiap baris dengan 1 emoji yang relevan
 - Setiap baris MAKSIMAL 15 kata
 - TANPA format markdown (tanpa **, tanpa #, tanpa bullet)
-- VERIFIKASI SEBELUM MENJAWAB: setiap angka dan nama yang kamu sebut harus PERSIS sama dengan yang ada di data
+- Gunakan angka PERSIS dari data, jangan ubah atau bulatkan
 
-Data keuangan:
+Data keuangan (semua angka sudah dihitung server, gunakan apa adanya):
 ` + financialContext
 
 	messages := []map[string]string{
