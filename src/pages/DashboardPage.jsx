@@ -26,7 +26,9 @@ export default function DashboardPage({ onAddTransaction }) {
 
     const income = getTotalByType('income', month, year);
     const expense = getTotalByType('expense', month, year);
-    const balance = income - expense;
+    const balance = transactions.reduce((sum, t) => {
+        return sum + (t.type === 'income' ? t.amount : -t.amount);
+    }, 0);
 
     // Fetch AI insight on mount
     useEffect(() => {
@@ -100,7 +102,7 @@ export default function DashboardPage({ onAddTransaction }) {
             <Card glow className="balance-card animate-scale-in">
                 <div className="balance-card__label">
                     <Wallet size={16} />
-                    <span>Saldo Bulan Ini</span>
+                    <span>Saldo</span>
                 </div>
                 <div className={`balance-card__amount ${balance >= 0 ? 'text-income' : 'text-expense'}`}>
                     {formatCurrency(balance, currency)}
@@ -111,7 +113,7 @@ export default function DashboardPage({ onAddTransaction }) {
                             <TrendingUp size={14} />
                         </div>
                         <div>
-                            <span className="balance-card__stat-label">Pemasukan</span>
+                            <span className="balance-card__stat-label">Pemasukan Bulan Ini</span>
                             <span className="balance-card__stat-value text-income">
                                 {formatCurrency(income, currency)}
                             </span>
@@ -122,7 +124,7 @@ export default function DashboardPage({ onAddTransaction }) {
                             <TrendingDown size={14} />
                         </div>
                         <div>
-                            <span className="balance-card__stat-label">Pengeluaran</span>
+                            <span className="balance-card__stat-label">Pengeluaran Bulan Ini</span>
                             <span className="balance-card__stat-value text-expense">
                                 {formatCurrency(expense, currency)}
                             </span>
