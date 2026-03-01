@@ -78,7 +78,7 @@ func (h *GoogleAuthHandler) GoogleLogin(c *gin.Context) {
 			user = model.User{
 				Name:     tokenInfo.Name,
 				Email:    tokenInfo.Email,
-				GoogleID: tokenInfo.Sub,
+				GoogleID: &tokenInfo.Sub,
 				Avatar:   tokenInfo.Picture,
 				Phone:    req.Phone,
 				Role:     "user",
