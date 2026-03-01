@@ -6,7 +6,10 @@ type User struct {
 	ID           uint      `json:"id" gorm:"primaryKey"`
 	Name         string    `json:"name" gorm:"size:100;not null"`
 	Email        string    `json:"email" gorm:"size:255;uniqueIndex;not null"`
-	PasswordHash string    `json:"-" gorm:"size:255;not null"`
+	Phone        string    `json:"phone" gorm:"size:20"`
+	PasswordHash string    `json:"-" gorm:"size:255"`
+	GoogleID     string    `json:"-" gorm:"size:255;uniqueIndex"`
+	Avatar       string    `json:"avatar" gorm:"size:500"`
 	Role         string    `json:"role" gorm:"size:50;default:user"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
@@ -25,6 +28,8 @@ type UserResponse struct {
 	ID        uint      `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
+	Phone     string    `json:"phone"`
+	Avatar    string    `json:"avatar"`
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -34,6 +39,8 @@ func (u *User) ToResponse() UserResponse {
 		ID:        u.ID,
 		Name:      u.Name,
 		Email:     u.Email,
+		Phone:     u.Phone,
+		Avatar:    u.Avatar,
 		Role:      u.Role,
 		CreatedAt: u.CreatedAt,
 	}

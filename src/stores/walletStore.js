@@ -1,62 +1,76 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { generateId } from '../utils/formatters';
+import api from '../utils/api';
 
-const DEFAULT_WALLETS = [
-    { id: 'wallet-1', name: 'Dompet', icon: 'Wallet', color: '#3b987b', balance: 0 },
-    { id: 'wallet-2', name: 'Bank', icon: 'Building', color: '#0984e3', balance: 0 },
-    { id: 'wallet-3', name: 'E-Wallet', icon: 'Smartphone', color: '#22c55e', balance: 0 },
-];
+const useWalletStore = create((set, get) => ({
+    wallets: [],
+    loaded: false,
 
-const useWalletStore = create(
-    persist(
-        (set, get) => ({
-            wallets: DEFAULT_WALLETS,
+    fetchWallets: async () => {
+        try {
+            const { data } = await api.get('/wallets');
+            set({ wallets: data.data || [], loaded: true });
+        } catch {
+            set({ loaded: true });
+        }
+    },
 
-            addWallet: (wallet) =>
-                set((state) => ({
-                    wallets: [...state.wallets, { ...wallet, id: generateId(), balance: wallet.balance || 0 }],
-                })),
+    addWallet: async (wallet) => {
+        const { data } = await api.post('/wallets', { ...wallet, balance: wallet.balance || 0 });
+        set((state) => ({ wallets: [...state.wallets, data.data] }));
+        return data.data;
+    },
 
-            updateWallet: (id, updates) =>
-                set((state) => ({
-                    wallets: state.wallets.map((w) =>
-                        w.id === id ? { ...w, ...updates } : w
-                    ),
-                })),
+    updateWallet: async (id, updates) => {
+        const { data } = await api.put(`/wallets/${id}`, updates);
+        set((state) => ({
+            wallets: state.wallets.map((w) => (w.id === id ? data.data : w)),
+        }));
+    },
 
-            deleteWallet: (id) =>
-                set((state) => ({
-                    wallets: state.wallets.filter((w) => w.id !== id),
-                })),
+    deleteWallet: async (id) => {
+        await api.delete(`/wallets/${id}`);
+        set((state) => ({ wallets: state.wallets.filter((w) => w.id !== id) }));
+    },
 
-            adjustBalance: (id, amount) =>
-                set((state) => ({
-                    wallets: state.wallets.map((w) =>
-                        w.id === id ? { ...w, balance: w.balance + amount } : w
-                    ),
-                })),
+    adjustBalance: async (id, amount) => {
+        const wallet = get().wallets.find((w) => w.id === id);
+        if (!wallet) return;
+        const newBalance = wallet.balance + amount;
+        await api.put(`/wallets/${id}`, { balance: newBalance });
+        set((state) => ({
+            wallets: state.wallets.map((w) =>
+                w.id === id ? { ...w, balance: newBalance } : w
+            ),
+        }));
+    },
 
-            transfer: (fromId, toId, amount) => {
-                set((state) => ({
-                    wallets: state.wallets.map((w) => {
-                        if (w.id === fromId) return { ...w, balance: w.balance - amount };
-                        if (w.id === toId) return { ...w, balance: w.balance + amount };
-                        return w;
-                    }),
-                }));
-            },
+    transfer: async (fromId, toId, amount) => {
+        const wallets = get().wallets;
+        const from = wallets.find((w) => w.id === fromId);
+        const to = wallets.find((w) => w.id === toId);
+        if (!from || !to) return;
 
-            getTotalBalance: () => {
-                return get().wallets.reduce((sum, w) => sum + w.balance, 0);
-            },
+        await Promise.all([
+            api.put(`/wallets/${fromId}`, { balance: from.balance - amount }),
+            api.put(`/wallets/${toId}`, { balance: to.balance + amount }),
+        ]);
 
-            getWalletById: (id) => {
-                return get().wallets.find((w) => w.id === id);
-            },
-        }),
-        { name: 'catatku-wallets' }
-    )
-);
+        set((state) => ({
+            wallets: state.wallets.map((w) => {
+                if (w.id === fromId) return { ...w, balance: w.balance - amount };
+                if (w.id === toId) return { ...w, balance: w.balance + amount };
+                return w;
+            }),
+        }));
+    },
+
+    getTotalBalance: () => {
+        return get().wallets.reduce((sum, w) => sum + w.balance, 0);
+    },
+
+    getWalletById: (id) => {
+        return get().wallets.find((w) => w.id === id);
+    },
+}));
 
 export default useWalletStore;

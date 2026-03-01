@@ -10,18 +10,19 @@ import (
 )
 
 type Config struct {
-	AppPort      string
-	AppEnv       string
-	DBHost       string
-	DBPort       string
-	DBName       string
-	DBUser       string
-	DBPass       string
-	JWTSecret    string
-	JWTAccessExp string
-	JWTRefreshExp string
-	BcryptRounds int
-	CORSOrigins  []string
+	AppPort        string
+	AppEnv         string
+	DBHost         string
+	DBPort         string
+	DBName         string
+	DBUser         string
+	DBPass         string
+	JWTSecret      string
+	JWTAccessExp   string
+	JWTRefreshExp  string
+	BcryptRounds   int
+	CORSOrigins    []string
+	GoogleClientID string
 }
 
 var AppConfig *Config
@@ -37,18 +38,19 @@ func Load() *Config {
 	}
 
 	AppConfig = &Config{
-		AppPort:       getEnv("APP_PORT", "8000"),
-		AppEnv:        getEnv("APP_ENV", "development"),
-		DBHost:        getEnv("DB_HOST", "localhost"),
-		DBPort:        getEnv("DB_PORT", "5432"),
-		DBName:        getEnv("DB_NAME", "catat_keuangan"),
-		DBUser:        getEnv("DB_USER", "postgres"),
-		DBPass:        getEnv("DB_PASS", ""),
-		JWTSecret:     getEnv("JWT_SECRET", "change-me-in-production-min-32-chars"),
-		JWTAccessExp:  getEnv("JWT_ACCESS_EXPIRY", "15m"),
-		JWTRefreshExp: getEnv("JWT_REFRESH_EXPIRY", "7d"),
-		BcryptRounds:  rounds,
-		CORSOrigins:   origins,
+		AppPort:        getEnv("APP_PORT", "8000"),
+		AppEnv:         getEnv("APP_ENV", "development"),
+		DBHost:         getEnv("DB_HOST", "localhost"),
+		DBPort:         getEnv("DB_PORT", "5432"),
+		DBName:         getEnv("DB_NAME", "catat_keuangan"),
+		DBUser:         getEnv("DB_USER", "postgres"),
+		DBPass:         getEnv("DB_PASS", ""),
+		JWTSecret:      getEnv("JWT_SECRET", "change-me-in-production-min-32-chars"),
+		JWTAccessExp:   getEnv("JWT_ACCESS_EXPIRY", "15m"),
+		JWTRefreshExp:  getEnv("JWT_REFRESH_EXPIRY", "7d"),
+		BcryptRounds:   rounds,
+		CORSOrigins:    origins,
+		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 	}
 
 	return AppConfig

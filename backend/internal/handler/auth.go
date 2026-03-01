@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"catat-keuangan-backend/internal/config"
 	"catat-keuangan-backend/internal/service"
 	"catat-keuangan-backend/internal/util"
 
@@ -20,6 +21,7 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 type registerRequest struct {
 	Name     string `json:"name" binding:"required,min=2,max=100"`
 	Email    string `json:"email" binding:"required,email"`
+	Phone    string `json:"phone" binding:"required"`
 	Password string `json:"password" binding:"required,min=8"`
 }
 
@@ -35,7 +37,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	user, err := h.AuthService.Register(req.Name, req.Email, req.Password)
+	user, err := h.AuthService.Register(req.Name, req.Email, req.Phone, req.Password)
 	if err != nil {
 		util.Error(c, http.StatusConflict, err.Error())
 		return
@@ -70,7 +72,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Set refresh token as httpOnly cookie
-	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", false, true)
+	isSecure := config.AppConfig.AppEnv == "production"
+	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", isSecure, true)
 
 	util.Success(c, http.StatusOK, "Login successful", gin.H{
 		"access_token": accessToken,
@@ -91,7 +94,8 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("refreshToken", newRefreshToken, 7*24*3600, "/", "", false, true)
+	isSecure := config.AppConfig.AppEnv == "production"
+	c.SetCookie("refreshToken", newRefreshToken, 7*24*3600, "/", "", isSecure, true)
 
 	util.Success(c, http.StatusOK, "Token refreshed", gin.H{
 		"access_token": accessToken,
@@ -102,7 +106,8 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	h.AuthService.RevokeAllTokens(userID.(uint))
 
-	c.SetCookie("refreshToken", "", -1, "/", "", false, true)
+	isSecure := config.AppConfig.AppEnv == "production"
+	c.SetCookie("refreshToken", "", -1, "/", "", isSecure, true)
 
 	util.Success(c, http.StatusOK, "Logged out successfully", nil)
 }
@@ -110,11 +115,13 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	var user struct {
-		ID    uint   `json:"id"`
-		Name  string `json:"name"`
-		Email string `json:"email"`
-		Role  string `json:"role"`
+		ID     uint   `json:"id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+		Phone  string `json:"phone"`
+		Avatar string `json:"avatar"`
+		Role   string `json:"role"`
 	}
-	h.AuthService.DB.Table("users").Select("id, name, email, role").Where("id = ?", userID).Scan(&user)
+	h.AuthService.DB.Table("users").Select("id, name, email, phone, avatar, role").Where("id = ?", userID).Scan(&user)
 	util.Success(c, http.StatusOK, "User profile", user)
 }

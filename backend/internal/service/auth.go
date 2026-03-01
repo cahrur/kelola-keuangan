@@ -2,7 +2,9 @@ package service
 
 import (
 	"errors"
+	"strings"
 	"time"
+	"unicode"
 
 	"catat-keuangan-backend/internal/config"
 	"catat-keuangan-backend/internal/model"
@@ -20,11 +22,49 @@ func NewAuthService(db *gorm.DB) *AuthService {
 	return &AuthService{DB: db}
 }
 
-func (s *AuthService) Register(name, email, password string) (*model.User, error) {
+// validatePassword enforces password policy per auth-standards Rule 6
+func validatePassword(password string) error {
+	if len(password) < 8 {
+		return errors.New("password minimal 8 karakter")
+	}
+	var hasUpper, hasLower, hasDigit bool
+	for _, c := range password {
+		if unicode.IsUpper(c) {
+			hasUpper = true
+		}
+		if unicode.IsLower(c) {
+			hasLower = true
+		}
+		if unicode.IsDigit(c) {
+			hasDigit = true
+		}
+	}
+	var missing []string
+	if !hasUpper {
+		missing = append(missing, "huruf besar")
+	}
+	if !hasLower {
+		missing = append(missing, "huruf kecil")
+	}
+	if !hasDigit {
+		missing = append(missing, "angka")
+	}
+	if len(missing) > 0 {
+		return errors.New("password harus mengandung " + strings.Join(missing, ", "))
+	}
+	return nil
+}
+
+func (s *AuthService) Register(name, email, phone, password string) (*model.User, error) {
 	// Check if email already exists
 	var existing model.User
 	if err := s.DB.Where("email = ?", email).First(&existing).Error; err == nil {
 		return nil, errors.New("email already registered")
+	}
+
+	// Validate password policy per auth-standards Rule 6
+	if err := validatePassword(password); err != nil {
+		return nil, err
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), config.AppConfig.BcryptRounds)
@@ -35,6 +75,7 @@ func (s *AuthService) Register(name, email, password string) (*model.User, error
 	user := model.User{
 		Name:         name,
 		Email:        email,
+		Phone:        phone,
 		PasswordHash: string(hash),
 		Role:         "user",
 	}
@@ -42,6 +83,9 @@ func (s *AuthService) Register(name, email, password string) (*model.User, error
 	if err := s.DB.Create(&user).Error; err != nil {
 		return nil, errors.New("failed to create user")
 	}
+
+	// Seed default categories and wallets for the new user
+	SeedUserDefaults(s.DB, user.ID)
 
 	return &user, nil
 }

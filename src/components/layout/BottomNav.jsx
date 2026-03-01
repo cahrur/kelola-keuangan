@@ -1,6 +1,7 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X } from 'lucide-react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import useAuthStore from '../../stores/authStore';
 import './BottomNav.css';
 
 const MAIN_NAV = [
@@ -20,7 +21,15 @@ const MORE_NAV = [
 
 export default function BottomNav() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const logout = useAuthStore((s) => s.logout);
     const [showMore, setShowMore] = useState(false);
+
+    const handleLogout = async () => {
+        setShowMore(false);
+        await logout();
+        navigate('/login');
+    };
 
     const isMoreActive = MORE_NAV.some(
         (item) => location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to))
@@ -56,6 +65,10 @@ export default function BottomNav() {
                                 );
                             })}
                         </div>
+                        <button className="more-menu__logout" onClick={handleLogout}>
+                            <LogOut size={18} />
+                            <span>Keluar</span>
+                        </button>
                     </div>
                 </div>
             )}

@@ -1,10 +1,13 @@
 package router
 
 import (
+	"time"
+
 	"catat-keuangan-backend/internal/config"
 	"catat-keuangan-backend/internal/handler"
 	"catat-keuangan-backend/internal/middleware"
 	"catat-keuangan-backend/internal/service"
+	"catat-keuangan-backend/internal/util"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -28,17 +31,26 @@ func Setup(db *gorm.DB) *gin.Engine {
 		AllowCredentials: true,
 	}))
 
+	// Rate limiting per security-standards Rule 1
+	generalLimiter := middleware.NewRateLimiter(100, 15*time.Minute)
+	authLimiter := middleware.NewRateLimiter(10, 15*time.Minute)
+
+	// Apply general rate limit to all API routes
+	r.Use(generalLimiter.Middleware())
+
 	// Services
 	authService := service.NewAuthService(db)
 
 	// Handlers
 	healthHandler := handler.NewHealthHandler()
 	authHandler := handler.NewAuthHandler(authService)
+	googleAuthHandler := handler.NewGoogleAuthHandler(db, authService)
 	transactionHandler := handler.NewTransactionHandler(db)
 	categoryHandler := handler.NewCategoryHandler(db)
 	walletHandler := handler.NewWalletHandler(db)
 	debtHandler := handler.NewDebtHandler(db)
 	obligationHandler := handler.NewObligationHandler(db)
+	budgetHandler := handler.NewBudgetHandler(db)
 
 	// Health check (no auth)
 	r.GET("/health", healthHandler.Health)
@@ -46,12 +58,14 @@ func Setup(db *gorm.DB) *gin.Engine {
 	// API v1 routes
 	v1 := r.Group("/api/v1")
 	{
-		// Auth (no auth required)
+		// Auth (no auth required, stricter rate limit)
 		auth := v1.Group("/auth")
+		auth.Use(authLimiter.Middleware())
 		{
 			auth.POST("/register", authHandler.Register)
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh", authHandler.Refresh)
+			auth.POST("/google", googleAuthHandler.GoogleLogin)
 		}
 
 		// Protected routes
@@ -93,8 +107,28 @@ func Setup(db *gorm.DB) *gin.Engine {
 			protected.DELETE("/obligations/:id", obligationHandler.Delete)
 			protected.GET("/obligations/:id/checklist", obligationHandler.ListChecklist)
 			protected.POST("/obligations/:id/checklist", obligationHandler.TogglePeriod)
+
+			// Budgets
+			protected.GET("/budgets", budgetHandler.List)
+			protected.POST("/budgets", budgetHandler.Set)
+			protected.DELETE("/budgets/:id", budgetHandler.Delete)
 		}
 	}
+
+	// Serve frontend static files (single-container deployment)
+	// Check if dist/ directory exists (production build)
+	r.Static("/assets", "./dist/assets")
+	r.StaticFile("/favicon.ico", "./dist/favicon.ico")
+
+	// SPA fallback: serve index.html for all non-API, non-asset routes
+	r.NoRoute(func(c *gin.Context) {
+		// Don't serve index.html for API routes
+		if len(c.Request.URL.Path) >= 4 && c.Request.URL.Path[:4] == "/api" {
+			util.Error(c, 404, "Route not found")
+			return
+		}
+		c.File("./dist/index.html")
+	})
 
 	return r
 }

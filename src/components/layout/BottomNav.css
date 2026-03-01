@@ -168,3 +168,30 @@
 .more-menu__item--active .more-menu__icon {
     background: var(--accent-primary-glow);
 }
+
+/* Logout button */
+.more-menu__logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: 12px;
+    margin-top: var(--space-lg);
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    padding-top: var(--space-lg);
+    background: none;
+    color: var(--color-danger);
+    font-size: var(--font-sm);
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.more-menu__logout:active {
+    background: var(--color-danger-bg);
+}

@@ -1,40 +1,44 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { DEFAULT_CATEGORIES } from '../utils/constants';
-import { generateId } from '../utils/formatters';
+import api from '../utils/api';
 
-const useCategoryStore = create(
-    persist(
-        (set, get) => ({
-            categories: DEFAULT_CATEGORIES,
+const useCategoryStore = create((set, get) => ({
+    categories: [],
+    loaded: false,
 
-            addCategory: (category) =>
-                set((state) => ({
-                    categories: [...state.categories, { ...category, id: generateId() }],
-                })),
+    fetchCategories: async () => {
+        try {
+            const { data } = await api.get('/categories');
+            set({ categories: data.data || [], loaded: true });
+        } catch {
+            set({ loaded: true });
+        }
+    },
 
-            updateCategory: (id, updates) =>
-                set((state) => ({
-                    categories: state.categories.map((cat) =>
-                        cat.id === id ? { ...cat, ...updates } : cat
-                    ),
-                })),
+    addCategory: async (category) => {
+        const { data } = await api.post('/categories', category);
+        set((state) => ({ categories: [...state.categories, data.data] }));
+        return data.data;
+    },
 
-            deleteCategory: (id) =>
-                set((state) => ({
-                    categories: state.categories.filter((cat) => cat.id !== id),
-                })),
+    updateCategory: async (id, updates) => {
+        const { data } = await api.put(`/categories/${id}`, updates);
+        set((state) => ({
+            categories: state.categories.map((c) => (c.id === id ? data.data : c)),
+        }));
+    },
 
-            getCategoriesByType: (type) => {
-                return get().categories.filter((cat) => cat.type === type);
-            },
+    deleteCategory: async (id) => {
+        await api.delete(`/categories/${id}`);
+        set((state) => ({ categories: state.categories.filter((c) => c.id !== id) }));
+    },
 
-            getCategoryById: (id) => {
-                return get().categories.find((cat) => cat.id === id);
-            },
-        }),
-        { name: 'catatku-categories' }
-    )
-);
+    getCategoriesByType: (type) => {
+        return get().categories.filter((cat) => cat.type === type);
+    },
+
+    getCategoryById: (id) => {
+        return get().categories.find((cat) => cat.id === id);
+    },
+}));
 
 export default useCategoryStore;

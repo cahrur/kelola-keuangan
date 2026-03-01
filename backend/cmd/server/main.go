@@ -34,6 +34,7 @@ func main() {
 		&model.Debt{},
 		&model.Obligation{},
 		&model.ObligationChecklist{},
+		&model.Budget{},
 	); err != nil {
 		log.Fatal("Auto-migration failed:", err)
 	}

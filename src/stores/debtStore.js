@@ -1,92 +1,88 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { generateId } from '../utils/formatters';
+import api from '../utils/api';
 
-const useDebtStore = create(
-    persist(
-        (set, get) => ({
-            debts: [],
+const useDebtStore = create((set, get) => ({
+    debts: [],
+    loaded: false,
 
-            addDebt: (debt) =>
-                set((state) => ({
-                    debts: [
-                        {
-                            ...debt,
-                            id: generateId(),
-                            createdAt: new Date().toISOString(),
-                            payments: [],
-                            status: 'active',
-                        },
-                        ...state.debts,
-                    ],
-                })),
+    fetchDebts: async () => {
+        try {
+            const { data } = await api.get('/debts');
+            set({ debts: data.data || [], loaded: true });
+        } catch {
+            set({ loaded: true });
+        }
+    },
 
-            updateDebt: (id, updates) =>
-                set((state) => ({
-                    debts: state.debts.map((d) =>
-                        d.id === id ? { ...d, ...updates } : d
-                    ),
-                })),
+    addDebt: async (debt) => {
+        const { data } = await api.post('/debts', {
+            ...debt,
+            paidAmount: 0,
+        });
+        set((state) => ({ debts: [data.data, ...state.debts] }));
+        return data.data;
+    },
 
-            deleteDebt: (id) =>
-                set((state) => ({
-                    debts: state.debts.filter((d) => d.id !== id),
-                })),
+    updateDebt: async (id, updates) => {
+        const { data } = await api.put(`/debts/${id}`, updates);
+        set((state) => ({
+            debts: state.debts.map((d) => (d.id === id ? data.data : d)),
+        }));
+    },
 
-            addPayment: (debtId, amount, date) => {
-                set((state) => ({
-                    debts: state.debts.map((d) => {
-                        if (d.id !== debtId) return d;
-                        const newPayments = [...d.payments, { id: generateId(), amount, date, createdAt: new Date().toISOString() }];
-                        const totalPaid = newPayments.reduce((s, p) => s + p.amount, 0);
-                        const newStatus = totalPaid >= d.amount ? 'paid' : 'active';
-                        return { ...d, payments: newPayments, status: newStatus };
-                    }),
-                }));
-            },
+    deleteDebt: async (id) => {
+        await api.delete(`/debts/${id}`);
+        set((state) => ({ debts: state.debts.filter((d) => d.id !== id) }));
+    },
 
-            markAsPaid: (id) =>
-                set((state) => ({
-                    debts: state.debts.map((d) =>
-                        d.id === id ? { ...d, status: 'paid' } : d
-                    ),
-                })),
+    markAsPaid: async (id) => {
+        const debt = get().debts.find((d) => d.id === id);
+        if (!debt) return;
+        await api.put(`/debts/${id}`, { status: 'paid', paidAmount: debt.amount });
+        set((state) => ({
+            debts: state.debts.map((d) =>
+                d.id === id ? { ...d, status: 'paid', paidAmount: d.amount } : d
+            ),
+        }));
+    },
 
-            getTotalOwed: () => {
-                // Hutang saya ke orang lain (I owe)
-                return get()
-                    .debts.filter((d) => d.type === 'i_owe' && d.status === 'active')
-                    .reduce((sum, d) => {
-                        const paid = d.payments.reduce((s, p) => s + p.amount, 0);
-                        return sum + (d.amount - paid);
-                    }, 0);
-            },
+    getTotalOwed: () => {
+        return get()
+            .debts.filter((d) => d.type === 'i_owe' && d.status === 'active')
+            .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
+    },
 
-            getTotalLent: () => {
-                // Orang lain berhutang ke saya (they owe)
-                return get()
-                    .debts.filter((d) => d.type === 'they_owe' && d.status === 'active')
-                    .reduce((sum, d) => {
-                        const paid = d.payments.reduce((s, p) => s + p.amount, 0);
-                        return sum + (d.amount - paid);
-                    }, 0);
-            },
+    getTotalLent: () => {
+        return get()
+            .debts.filter((d) => d.type === 'they_owe' && d.status === 'active')
+            .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
+    },
 
-            getRemainingAmount: (id) => {
-                const debt = get().debts.find((d) => d.id === id);
-                if (!debt) return 0;
-                const paid = debt.payments.reduce((s, p) => s + p.amount, 0);
-                return Math.max(debt.amount - paid, 0);
-            },
+    getRemaining: (id) => {
+        const debt = get().debts.find((d) => d.id === id);
+        if (!debt) return 0;
+        return Math.max(debt.amount - (debt.paidAmount || 0), 0);
+    },
 
-            getPaidAmount: (id) => {
-                const debt = get().debts.find((d) => d.id === id);
-                if (!debt) return 0;
-                return debt.payments.reduce((s, p) => s + p.amount, 0);
-            },
-        }),
-        { name: 'catatku-debts' }
-    )
-);
+    getPaid: (id) => {
+        const debt = get().debts.find((d) => d.id === id);
+        if (!debt) return 0;
+        return debt.paidAmount || 0;
+    },
+
+    getProgress: (id) => {
+        const debt = get().debts.find((d) => d.id === id);
+        if (!debt || debt.amount === 0) return 0;
+        return Math.round(((debt.paidAmount || 0) / debt.amount) * 100);
+    },
+
+    getActiveDebts: (type) => {
+        return get().debts.filter((d) => d.type === type && d.status === 'active');
+    },
+
+    getSettledDebts: (type) => {
+        return get().debts.filter((d) => d.type === type && d.status !== 'active');
+    },
+}));
 
 export default useDebtStore;
