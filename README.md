@@ -247,6 +247,26 @@ Base URL: `/api/v1`
 | `GET` | `/budgets` | List budgets |
 | `GET` | `/health` | Health check |
 
-## License
+## 🌐 Akses Aplikasi
 
-MIT
+Aplikasi ini tersedia dan bisa digunakan di **[kelola-keuangan.mudahdeal.com](https://kelola-keuangan.mudahdeal.com/)**
+
+## ☁️ Hosting
+
+Proyek ini di-host menggunakan **[DealCloud](https://dealcloud.id)** — Deploy App Instan seperti Vercel.
+
+## 👨‍💻 Developer
+
+Dikembangkan oleh:
+- **[Cahrur Rozid](https://github.com/cahrur)**
+- **[DealTech](https://github.com/Deal-Tech)** — [tech.mudahdeal.com](https://tech.mudahdeal.com)
+
+## 🐛 Kontribusi & Laporan Bug
+
+Jika kamu ingin **request fitur baru**, **menemukan bug**, atau **menemukan celah keamanan**, silakan buat issue di:
+
+👉 [**github.com/cahrur/kelola-keuangan/issues**](https://github.com/cahrur/kelola-keuangan/issues)
+
+## 📄 License
+
+Proyek ini bersifat **open source** dan dilisensikan di bawah [MIT License](LICENSE).
