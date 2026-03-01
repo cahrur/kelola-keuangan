@@ -14,6 +14,22 @@ const useBudgetStore = create((set, get) => ({
         }
     },
 
+    fetchBudgetsByMonth: async (month, year) => {
+        try {
+            const { data } = await api.get(`/budgets?month=${month}&year=${year}`);
+            const fetched = data.data || [];
+            // Merge: replace budgets for this month+year, keep others
+            set((state) => {
+                const otherBudgets = state.budgets.filter(
+                    (b) => !(b.month === month && b.year === year)
+                );
+                return { budgets: [...otherBudgets, ...fetched] };
+            });
+        } catch {
+            // keep existing
+        }
+    },
+
     setBudget: async (budget) => {
         // Request body auto-snakeized by interceptor — just use camelCase
         const { data } = await api.post('/budgets', {
@@ -21,6 +37,7 @@ const useBudgetStore = create((set, get) => ({
             amount: parseFloat(budget.amount),
             month: budget.month,
             year: budget.year,
+            period: budget.period || 'once',
         });
         const updated = data.data;
         set((state) => {

@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Plus, AlertTriangle, CheckCircle } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Plus, AlertTriangle, CheckCircle, RefreshCw, CalendarDays } from 'lucide-react';
 import useTransactionStore from '../stores/transactionStore';
 import useBudgetStore from '../stores/budgetStore';
 import useCategoryStore from '../stores/categoryStore';
@@ -16,7 +16,7 @@ import './BudgetsPage.css';
 
 export default function BudgetsPage() {
     const { transactions } = useTransactionStore();
-    const { budgets, setBudget, removeBudget, getBudgetsForMonth } = useBudgetStore();
+    const { budgets, setBudget, removeBudget, getBudgetsForMonth, fetchBudgetsByMonth } = useBudgetStore();
     const { categories } = useCategoryStore();
     const { currency } = useSettingsStore();
 
@@ -26,9 +26,15 @@ export default function BudgetsPage() {
     const [showForm, setShowForm] = useState(false);
     const [formCategory, setFormCategory] = useState('');
     const [formAmount, setFormAmount] = useState('');
+    const [formPeriod, setFormPeriod] = useState('monthly');
 
     const expenseCategories = categories.filter((c) => c.type === 'expense');
     const monthBudgets = useMemo(() => getBudgetsForMonth(selectedMonth, selectedYear), [budgets, selectedMonth, selectedYear]);
+
+    // Fetch budgets for selected month (triggers auto-carry for recurring)
+    useEffect(() => {
+        fetchBudgetsByMonth(selectedMonth, selectedYear);
+    }, [selectedMonth, selectedYear]);
 
     const getSpentForCategory = (categoryId) => {
         return transactions
@@ -52,10 +58,12 @@ export default function BudgetsPage() {
             month: selectedMonth,
             year: selectedYear,
             amount: parseFloat(formAmount),
+            period: formPeriod,
         });
         setShowForm(false);
         setFormCategory('');
         setFormAmount('');
+        setFormPeriod('monthly');
     };
 
     const totalBudget = monthBudgets.reduce((s, b) => s + b.amount, 0);
@@ -143,6 +151,8 @@ export default function BudgetsPage() {
                                             {category?.name?.charAt(0) || '?'}
                                         </div>
                                         <span className="budget-card__name">{category?.name || 'Kategori'}</span>
+                                        {budget.period === 'monthly' && <RefreshCw size={12} style={{ color: 'var(--primary)', marginLeft: 4 }} title="Reset bulanan" />}
+                                        {budget.period === 'yearly' && <CalendarDays size={12} style={{ color: 'var(--primary)', marginLeft: 4 }} title="Reset tahunan" />}
                                     </div>
                                     <div className="budget-card__status">
                                         {isOver ? (
@@ -206,6 +216,14 @@ export default function BudgetsPage() {
                             onChange={(val) => setFormAmount(val)}
                             required
                         />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Periode</label>
+                        <select value={formPeriod} onChange={(e) => setFormPeriod(e.target.value)}>
+                            <option value="once">Sekali Saja</option>
+                            <option value="monthly">Bulanan (reset tiap tgl 1)</option>
+                            <option value="yearly">Tahunan (reset tiap 1 Januari)</option>
+                        </select>
                     </div>
                     <Button type="submit" fullWidth className="mt-md">
                         Simpan Anggaran
