@@ -1,6 +1,9 @@
 package router
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"catat-keuangan-backend/internal/config"
@@ -135,19 +138,29 @@ func Setup(db *gorm.DB) *gin.Engine {
 	}
 
 	// Serve frontend static files (single-container deployment)
-	// Check if dist/ directory exists (production build)
 	r.Static("/assets", "./dist/assets")
-	r.StaticFile("/favicon.ico", "./dist/favicon.ico")
-	r.StaticFile("/manifest.json", "./dist/manifest.json")
-	r.StaticFile("/logo.png", "./dist/logo.png")
 
-	// SPA fallback: serve index.html for all non-API, non-asset routes
+	// SPA fallback: serve static files from dist/ or index.html for client routes
 	r.NoRoute(func(c *gin.Context) {
+		path := c.Request.URL.Path
+
 		// Don't serve index.html for API routes
-		if len(c.Request.URL.Path) >= 4 && c.Request.URL.Path[:4] == "/api" {
+		if len(path) >= 4 && path[:4] == "/api" {
 			util.Error(c, 404, "Route not found")
 			return
 		}
+
+		// Try to serve the file from dist/ (handles sw.js, manifest.webmanifest, logo.png, etc.)
+		// Security: clean path to prevent path traversal (e.g. /../../../etc/passwd)
+		cleanPath := filepath.Clean("./dist" + path)
+		if strings.HasPrefix(cleanPath, "dist") || strings.HasPrefix(cleanPath, "dist"+string(filepath.Separator)) {
+			if info, err := os.Stat(cleanPath); err == nil && !info.IsDir() {
+				c.File(cleanPath)
+				return
+			}
+		}
+
+		// Fallback to index.html for SPA client-side routing
 		c.File("./dist/index.html")
 	})
 
