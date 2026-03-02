@@ -80,8 +80,25 @@ const useAIStore = create(
 
             // Chat
             sendMessage: async (message) => {
-                const { activeSessionId } = get();
+                let sessionId = get().activeSessionId;
                 set({ isSending: true });
+
+                // If no active session, create one first
+                if (!sessionId) {
+                    try {
+                        const { data } = await api.post('/ai/sessions');
+                        const session = data.data;
+                        sessionId = session.id;
+                        set((s) => ({
+                            sessions: [session, ...s.sessions],
+                            activeSessionId: sessionId,
+                            messages: [],
+                        }));
+                    } catch {
+                        set({ isSending: false });
+                        throw new Error('Gagal membuat sesi chat baru.');
+                    }
+                }
 
                 // Optimistic: add user message immediately
                 const tempUserMsg = { id: Date.now(), role: 'user', content: message, created_at: new Date().toISOString() };
@@ -89,7 +106,7 @@ const useAIStore = create(
 
                 try {
                     const { data } = await api.post('/ai/chat', {
-                        session_id: activeSessionId || 0,
+                        session_id: sessionId,
                         message,
                     });
 
@@ -99,25 +116,18 @@ const useAIStore = create(
                     set((s) => {
                         // Replace temp user msg, add assistant msg
                         const msgs = [...s.messages.filter((m) => m.id !== tempUserMsg.id)];
-                        // Add real user msg
                         msgs.push({ id: assistantMsg.id - 1, role: 'user', content: message, created_at: assistantMsg.created_at });
                         msgs.push(assistantMsg);
 
                         // Update session in list
-                        const newSessionId = result.session_id;
-                        let sessions = s.sessions;
-                        if (!activeSessionId) {
-                            // New session was created server-side
-                            sessions = [{ id: newSessionId, title: message.slice(0, 50), updated_at: new Date().toISOString() }, ...sessions];
-                        } else {
-                            sessions = sessions.map((sess) =>
-                                sess.id === newSessionId ? { ...sess, updated_at: new Date().toISOString() } : sess
-                            );
-                        }
+                        const returnedSessionId = result.session_id;
+                        const sessions = s.sessions.map((sess) =>
+                            sess.id === returnedSessionId ? { ...sess, updated_at: new Date().toISOString() } : sess
+                        );
 
                         return {
                             messages: msgs,
-                            activeSessionId: newSessionId,
+                            activeSessionId: returnedSessionId,
                             sessions,
                             isSending: false,
                         };
