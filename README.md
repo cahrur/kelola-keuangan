@@ -294,7 +294,7 @@ Aplikasi ini tersedia dan bisa digunakan di **[kelola-keuangan.mudahdeal.com](ht
 
 ## ☁️ Hosting
 
-Proyek ini di-host menggunakan **[DealCloud](https://dealcloud.id)** — Deploy App Instan seperti Vercel.
+Proyek ini di-host menggunakan **[DealCloud](https://cloud.mudahdeal.com)** — Deploy App Instan seperti Vercel.
 
 ## 👨‍💻 Developer
 
