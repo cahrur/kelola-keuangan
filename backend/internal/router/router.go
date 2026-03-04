@@ -43,11 +43,12 @@ func Setup(db *gorm.DB) *gin.Engine {
 
 	// Services
 	authService := service.NewAuthService(db)
+	turnstileService := service.NewTurnstileService(config.AppConfig.TurnstileSecretKey)
 
 	// Handlers
 	healthHandler := handler.NewHealthHandler()
-	authHandler := handler.NewAuthHandler(authService)
-	googleAuthHandler := handler.NewGoogleAuthHandler(db, authService)
+	authHandler := handler.NewAuthHandler(authService, turnstileService)
+	googleAuthHandler := handler.NewGoogleAuthHandler(db, authService, turnstileService)
 	transactionHandler := handler.NewTransactionHandler(db)
 	categoryHandler := handler.NewCategoryHandler(db)
 	walletHandler := handler.NewWalletHandler(db)

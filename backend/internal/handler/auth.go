@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"catat-keuangan-backend/internal/config"
@@ -11,45 +12,88 @@ import (
 )
 
 type AuthHandler struct {
-	AuthService *service.AuthService
+	AuthService      *service.AuthService
+	TurnstileService *service.TurnstileService
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
-	return &AuthHandler{AuthService: authService}
+func NewAuthHandler(authService *service.AuthService, turnstileService *service.TurnstileService) *AuthHandler {
+	return &AuthHandler{
+		AuthService:      authService,
+		TurnstileService: turnstileService,
+	}
 }
 
 type registerRequest struct {
-	Name     string `json:"name" binding:"required,min=2,max=100"`
-	Email    string `json:"email" binding:"required,email"`
-	Phone    string `json:"phone" binding:"required"`
-	Password string `json:"password" binding:"required,min=8"`
+	Name           string `json:"name" binding:"required,min=2,max=100"`
+	Email          string `json:"email" binding:"required,email"`
+	Phone          string `json:"phone" binding:"required"`
+	Password       string `json:"password" binding:"required,min=8"`
+	TurnstileToken string `json:"turnstile_token"`
 }
 
 type loginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
+	Email          string `json:"email" binding:"required,email"`
+	Password       string `json:"password" binding:"required"`
+	TurnstileToken string `json:"turnstile_token"`
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		util.ValidationError(c, "Validation failed", err.Error())
+		util.ValidationError(c, "Validation failed", "Invalid request body")
+		return
+	}
+
+	if err := h.TurnstileService.Verify(req.TurnstileToken, c.ClientIP()); err != nil {
+		util.Error(c, http.StatusUnauthorized, "Captcha verification failed")
 		return
 	}
 
 	user, err := h.AuthService.Register(req.Name, req.Email, req.Phone, req.Password)
 	if err != nil {
-		util.Error(c, http.StatusConflict, err.Error())
+		var conflictErr *util.ConflictError
+		var validationErr *util.ServiceValidationError
+		switch {
+		case errors.As(err, &conflictErr):
+			util.Error(c, http.StatusConflict, conflictErr.Message)
+		case errors.As(err, &validationErr):
+			util.Error(c, http.StatusBadRequest, validationErr.Message)
+		default:
+			util.Error(c, http.StatusInternalServerError, "Failed to register user")
+		}
 		return
 	}
 
-	util.Success(c, http.StatusCreated, "User registered successfully", user.ToResponse())
+	accessToken, err := h.AuthService.GenerateAccessToken(user.ID)
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Failed to generate access token")
+		return
+	}
+
+	refreshToken, err := h.AuthService.GenerateRefreshToken(user.ID)
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Failed to generate refresh token")
+		return
+	}
+
+	isSecure := config.AppConfig.AppEnv == "production"
+	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", isSecure, true)
+
+	util.Success(c, http.StatusCreated, "User registered successfully", gin.H{
+		"access_token": accessToken,
+		"user":         user.ToResponse(),
+	})
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		util.ValidationError(c, "Validation failed", err.Error())
+		util.ValidationError(c, "Validation failed", "Invalid request body")
+		return
+	}
+
+	if err := h.TurnstileService.Verify(req.TurnstileToken, c.ClientIP()); err != nil {
+		util.Error(c, http.StatusUnauthorized, "Captcha verification failed")
 		return
 	}
 

@@ -130,7 +130,7 @@ npm run dev
 ```bash
 cd catat-keuangan/backend
 cp .env.example .env
-# Edit .env: isi DB_PASS, JWT_SECRET, GOOGLE_CLIENT_ID
+# Edit .env: isi DB_PASS, JWT_SECRET, GOOGLE_CLIENT_ID, TURNSTILE_SECRET_KEY (opsional)
 go run ./cmd/server
 ```
 
@@ -142,6 +142,7 @@ go run ./cmd/server
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API URL | `http://localhost:8000` |
 | `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID | - |
+| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (opsional) | - |
 | `VITE_DEFAULT_CURRENCY` | Mata uang default | `IDR` |
 
 #### Backend (backend/.env)
@@ -161,6 +162,7 @@ go run ./cmd/server
 | `BCRYPT_ROUNDS` | Bcrypt cost | `12` |
 | `CORS_ORIGINS` | Allowed origins (comma-separated) | `http://localhost:5173` |
 | `GOOGLE_CLIENT_ID` | Google OAuth Client ID | - |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key (opsional) | - |
 | `AI_BASE_URL` | OpenAI-compatible API base URL | - |
 | `AI_API_KEY` | API key untuk AI provider | - |
 | `AI_MODEL` | Model AI yang digunakan | `gpt-4o-mini` |
@@ -227,6 +229,8 @@ BCRYPT_ROUNDS=12
 CORS_ORIGINS=https://yourdomain.com
 
 GOOGLE_CLIENT_ID=<google-client-id>.apps.googleusercontent.com
+TURNSTILE_SITE_KEY=<turnstile-site-key>
+TURNSTILE_SECRET_KEY=<turnstile-secret-key>
 
 AI_BASE_URL=https://openrouter.ai/api/v1
 AI_API_KEY=<your-ai-api-key>
@@ -243,6 +247,7 @@ SMTP_FROM=noreply-kk@mudahdeal.com
 
 > **Catatan:**
 > - `GOOGLE_CLIENT_ID` cukup **1 kali** saja. Dockerfile otomatis meneruskannya ke frontend (sebagai `VITE_GOOGLE_CLIENT_ID`) saat build, dan backend membacanya saat runtime. Pastikan di Coolify, `GOOGLE_CLIENT_ID` di-set sebagai **Build Variable** (bukan hanya runtime) supaya Vite bisa membacanya saat `npm run build`.
+> - Jika pakai Cloudflare Turnstile, isi `TURNSTILE_SECRET_KEY` di runtime env backend dan `TURNSTILE_SITE_KEY` di Build Variable agar frontend menghasilkan `VITE_TURNSTILE_SITE_KEY` saat build.
 > - `SMTP_*` dibutuhkan untuk fitur **Lupa Password** (kirim OTP via email). Jika tidak diisi, fitur reset password tidak akan berfungsi.
 > - `ENCRYPTION_KEY` harus tepat **32 karakter** untuk enkripsi AES-256-GCM (API key AI user).
 

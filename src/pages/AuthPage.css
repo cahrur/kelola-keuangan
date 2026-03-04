@@ -80,12 +80,32 @@
     color: var(--text-muted);
 }
 
+.auth-form__input--error {
+    border-color: rgba(239, 68, 68, 0.65);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.08);
+}
+
+.auth-form__input--error:focus {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
 .auth-form__error {
     background: var(--color-danger-bg);
     color: var(--color-danger);
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 0.8125rem;
+    text-align: center;
+}
+
+.auth-form__field-error {
+    font-size: 0.75rem;
+    color: var(--color-danger);
+    line-height: 1.4;
+}
+
+.auth-form__field-error--center {
     text-align: center;
 }
 
@@ -137,6 +157,26 @@
     justify-content: center;
     margin: 4px 0;
     width: 100%;
+}
+
+.auth-turnstile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    width: 100%;
+}
+
+.auth-turnstile > div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.auth-turnstile iframe {
+    width: 100% !important;
+    max-width: 100% !important;
 }
 
 .auth-footer {
@@ -258,6 +298,11 @@
     font-size: 0.75rem;
     color: var(--text-muted);
     text-align: center;
+}
+
+.auth-form__hint--left {
+    text-align: left;
+    margin-top: -6px;
 }
 
 /* Resend Link */

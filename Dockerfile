@@ -5,7 +5,9 @@ WORKDIR /app
 # Build args — Coolify passes these at build time
 # GOOGLE_CLIENT_ID is shared: Vite needs it at build time, Go needs it at runtime
 ARG GOOGLE_CLIENT_ID
+ARG TURNSTILE_SITE_KEY
 ENV VITE_GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+ENV VITE_TURNSTILE_SITE_KEY=$TURNSTILE_SITE_KEY
 ENV VITE_API_URL=
 
 # Cache dependencies

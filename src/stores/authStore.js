@@ -15,19 +15,31 @@ const useAuthStore = create((set, get) => ({
         set({ user, isAuthenticated: true, isLoading: false });
     },
 
-    register: async (name, email, phone, password) => {
-        const { data } = await api.post('/auth/register', { name, email, phone, password });
+    register: async (name, email, phone, password, turnstileToken = '') => {
+        const payload = { name, email, phone, password };
+        if (turnstileToken) payload.turnstileToken = turnstileToken;
+
+        const { data } = await api.post('/auth/register', payload);
+        if (data?.data?.accessToken && data?.data?.user) {
+            get().setAuth(data.data.user, data.data.accessToken);
+        }
         return data;
     },
 
-    login: async (email, password) => {
-        const { data } = await api.post('/auth/login', { email, password });
+    login: async (email, password, turnstileToken = '') => {
+        const payload = { email, password };
+        if (turnstileToken) payload.turnstileToken = turnstileToken;
+
+        const { data } = await api.post('/auth/login', payload);
         get().setAuth(data.data.user, data.data.accessToken);
         return data;
     },
 
-    googleLogin: async (credential, phone) => {
-        const { data } = await api.post('/auth/google', { credential, phone });
+    googleLogin: async (credential, phone, turnstileToken = '') => {
+        const payload = { credential, phone };
+        if (turnstileToken) payload.turnstileToken = turnstileToken;
+
+        const { data } = await api.post('/auth/google', payload);
         get().setAuth(data.data.user, data.data.accessToken);
         return data;
     },

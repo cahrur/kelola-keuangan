@@ -8,6 +8,7 @@ import (
 
 	"catat-keuangan-backend/internal/config"
 	"catat-keuangan-backend/internal/model"
+	"catat-keuangan-backend/internal/util"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -59,12 +60,12 @@ func (s *AuthService) Register(name, email, phone, password string) (*model.User
 	// Check if email already exists
 	var existing model.User
 	if err := s.DB.Where("email = ?", email).First(&existing).Error; err == nil {
-		return nil, errors.New("Email sudah terdaftar")
+		return nil, util.NewConflictError("Email sudah terdaftar")
 	}
 
 	// Validate password policy per auth-standards Rule 6
 	if err := validatePassword(password); err != nil {
-		return nil, err
+		return nil, util.NewServiceValidationError(err.Error())
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), config.AppConfig.BcryptRounds)

@@ -15,17 +15,23 @@ import (
 )
 
 type GoogleAuthHandler struct {
-	DB          *gorm.DB
-	AuthService *service.AuthService
+	DB               *gorm.DB
+	AuthService      *service.AuthService
+	TurnstileService *service.TurnstileService
 }
 
-func NewGoogleAuthHandler(db *gorm.DB, authService *service.AuthService) *GoogleAuthHandler {
-	return &GoogleAuthHandler{DB: db, AuthService: authService}
+func NewGoogleAuthHandler(db *gorm.DB, authService *service.AuthService, turnstileService *service.TurnstileService) *GoogleAuthHandler {
+	return &GoogleAuthHandler{
+		DB:               db,
+		AuthService:      authService,
+		TurnstileService: turnstileService,
+	}
 }
 
 type googleLoginRequest struct {
-	Credential string `json:"credential" binding:"required"`
-	Phone      string `json:"phone"`
+	Credential     string `json:"credential" binding:"required"`
+	Phone          string `json:"phone"`
+	TurnstileToken string `json:"turnstile_token"`
 }
 
 type googleTokenInfo struct {
@@ -40,7 +46,12 @@ type googleTokenInfo struct {
 func (h *GoogleAuthHandler) GoogleLogin(c *gin.Context) {
 	var req googleLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		util.ValidationError(c, "Validation failed", err.Error())
+		util.ValidationError(c, "Validation failed", "Invalid request body")
+		return
+	}
+
+	if err := h.TurnstileService.Verify(req.TurnstileToken, c.ClientIP()); err != nil {
+		util.Error(c, http.StatusUnauthorized, "Captcha verification failed")
 		return
 	}
 
