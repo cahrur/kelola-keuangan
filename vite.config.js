@@ -12,7 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script-defer',
-      includeAssets: ['logo.png', 'logo-192.png', 'logo.webp', 'logo-192.webp', 'robots.txt'],
+      includeAssets: ['logo.png', 'logo-192.png', 'logo.webp', 'logo-192.webp', 'logo-maskable-512.webp', 'logo-maskable-192.webp', 'robots.txt'],
       manifest: {
         id: '/',
         name: 'Kelola Keuangan',
@@ -48,9 +48,15 @@ export default defineConfig({
             type: 'image/png',
           },
           {
-            src: '/logo.png',
+            src: '/logo-maskable-512.webp',
             sizes: '512x512',
-            type: 'image/png',
+            type: 'image/webp',
+            purpose: 'maskable',
+          },
+          {
+            src: '/logo-maskable-192.webp',
+            sizes: '192x192',
+            type: 'image/webp',
             purpose: 'maskable',
           },
         ],
