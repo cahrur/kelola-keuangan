@@ -5,6 +5,7 @@
 
 # === AI AGENT SKILLS ===
 skills/
+.claude
 
 # === DEPENDENCIES ===
 node_modules/

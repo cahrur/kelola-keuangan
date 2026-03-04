@@ -5,7 +5,8 @@ import Card from '../components/ui/Card';
 import logoImg from '../assets/logo.webp';
 import './AboutPage.css';
 
-const APP_VERSION = '1.0.0';
+/* global __APP_VERSION__ */
+const APP_VERSION = __APP_VERSION__ || '1.0.0';
 
 const FEATURES = [
     { icon: Wallet, title: 'Multi Kantong', desc: 'Kelola saldo di berbagai kantong terpisah' },

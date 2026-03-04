@@ -39,6 +39,10 @@ const useAuthStore = create((set, get) => ({
             // logout even if API fails
         }
         clearAccessToken();
+        // Clear cached API data (financial data, user profiles) on logout
+        if ('caches' in window) {
+            caches.delete('api-cache');
+        }
         set({ user: null, isAuthenticated: false, isLoading: false });
     },
 

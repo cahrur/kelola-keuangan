@@ -12,6 +12,9 @@ import PageHeader from '../components/layout/PageHeader';
 import logoImg from '../assets/logo.webp';
 import './DashboardPage.css';
 
+const CHART_DAYS = 7;
+const MAX_RECENT_TRANSACTIONS = 5;
+
 export default function DashboardPage() {
     const navigate = useNavigate();
     const { transactions, getTotalByType } = useTransactionStore();
@@ -36,7 +39,7 @@ export default function DashboardPage() {
 
     const chartData = useMemo(() => {
         const days = [];
-        for (let i = 6; i >= 0; i--) {
+        for (let i = CHART_DAYS - 1; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             const dateStr = d.toISOString().slice(0, 10);
@@ -51,7 +54,7 @@ export default function DashboardPage() {
     }, [transactions]);
 
     const recentTransactions = useMemo(() => {
-        return transactions.slice(0, 5);
+        return transactions.slice(0, MAX_RECENT_TRANSACTIONS);
     }, [transactions]);
 
     const CustomTooltip = ({ active, payload, label }) => {
