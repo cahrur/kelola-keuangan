@@ -138,8 +138,14 @@ func Setup(db *gorm.DB) *gin.Engine {
 		}
 	}
 
-	// Serve frontend static files (single-container deployment)
+	// Serve frontend hashed assets with long cache (Vite adds content hash to filenames)
 	r.Static("/assets", "./dist/assets")
+	r.Use(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/assets/") {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		}
+		c.Next()
+	})
 
 	// SPA fallback: serve static files from dist/ or index.html for client routes
 	r.NoRoute(func(c *gin.Context) {
@@ -156,12 +162,17 @@ func Setup(db *gorm.DB) *gin.Engine {
 		cleanPath := filepath.Clean("./dist" + path)
 		if strings.HasPrefix(cleanPath, "dist") || strings.HasPrefix(cleanPath, "dist"+string(filepath.Separator)) {
 			if info, err := os.Stat(cleanPath); err == nil && !info.IsDir() {
+				// Root static files (sw.js, manifest, etc.) — short cache
+				c.Header("Cache-Control", "no-cache")
 				c.File(cleanPath)
 				return
 			}
 		}
 
-		// Fallback to index.html for SPA client-side routing
+		// Fallback to index.html for SPA client-side routing (no cache)
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
 		c.File("./dist/index.html")
 	})
 
