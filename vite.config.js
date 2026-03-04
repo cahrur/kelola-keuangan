@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.png', 'logo-192.png', 'robots.txt'],
+      injectRegister: 'script-defer',
+      includeAssets: ['logo.png', 'logo-192.png', 'logo.webp', 'logo-192.webp', 'robots.txt'],
       manifest: {
         id: '/',
         name: 'Kelola Keuangan',
@@ -24,9 +25,19 @@ export default defineConfig({
         categories: ['finance', 'productivity'],
         icons: [
           {
+            src: '/logo-192.webp',
+            sizes: '192x192',
+            type: 'image/webp',
+          },
+          {
             src: '/logo-192.png',
             sizes: '192x192',
             type: 'image/png',
+          },
+          {
+            src: '/logo.webp',
+            sizes: '512x512',
+            type: 'image/webp',
           },
           {
             src: '/logo.png',
@@ -42,7 +53,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\/api\/.*/i,

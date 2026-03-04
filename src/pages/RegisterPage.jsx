@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../stores/authStore';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/logo.webp';
 import './AuthPage.css';
 
 export default function RegisterPage() {

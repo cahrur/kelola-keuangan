@@ -1,22 +1,20 @@
 import { useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { TrendingUp, TrendingDown, Wallet, ArrowRight, Plus, Sparkles, RefreshCw, Bell } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, ArrowRight, Sparkles, RefreshCw, Bell } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
 import useSettingsStore from '../stores/settingsStore';
 import useAIStore from '../stores/aiStore';
 import { formatCurrency, formatShortDate } from '../utils/formatters';
-import { MONTHS } from '../utils/constants';
 import Card from '../components/ui/Card';
-import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/logo.webp';
 import './DashboardPage.css';
 
-export default function DashboardPage({ onAddTransaction }) {
+export default function DashboardPage() {
     const navigate = useNavigate();
-    const { transactions, getTotalByType, getMonthlyData } = useTransactionStore();
+    const { transactions, getTotalByType } = useTransactionStore();
     const { getCategoryById } = useCategoryStore();
     const { currency } = useSettingsStore();
     const { insight, insightLoading, fetchInsight, refreshInsight } = useAIStore();
@@ -37,15 +35,20 @@ export default function DashboardPage({ onAddTransaction }) {
     }, []);
 
     const chartData = useMemo(() => {
-        const data = getMonthlyData(year);
-        return data
-            .filter((_, i) => i <= month)
-            .map((d) => ({
-                name: MONTHS[d.month].slice(0, 3),
-                Pemasukan: d.income,
-                Pengeluaran: d.expense,
-            }));
-    }, [transactions, month, year]);
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().slice(0, 10);
+            const dayTxns = transactions.filter((t) => t.date?.slice(0, 10) === dateStr);
+            days.push({
+                name: d.toLocaleDateString('id-ID', { weekday: 'short' }),
+                Pemasukan: dayTxns.filter((t) => t.type === 'income').reduce((s, t) => s + t.amount, 0),
+                Pengeluaran: dayTxns.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0),
+            });
+        }
+        return days;
+    }, [transactions]);
 
     const recentTransactions = useMemo(() => {
         return transactions.slice(0, 5);
@@ -150,7 +153,7 @@ export default function DashboardPage({ onAddTransaction }) {
             {/* Chart */}
             {chartData.length > 0 && (
                 <div className="mt-lg">
-                    <h2 className="section-title">Tren {year}</h2>
+                    <h2 className="section-title">Tren 7 Hari Terakhir</h2>
                     <Card className="chart-card">
                         <ResponsiveContainer width="100%" height={180}>
                             <AreaChart data={chartData}>

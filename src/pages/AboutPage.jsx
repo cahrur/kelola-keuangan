@@ -2,7 +2,7 @@ import { Building2, Mail, Sparkles, Wallet, PieChart, Bot, Shield, BarChart3, Gl
 import { Link } from 'react-router-dom';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/logo.webp';
 import './AboutPage.css';
 
 const APP_VERSION = '1.0.0';

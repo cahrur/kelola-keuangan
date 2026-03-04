@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, Settings, Info, LogOut } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
-import logoImg from '../../assets/logo.png';
+import logoImg from '../../assets/logo.webp';
 
 const DRAWER_NAV = [
     { to: '/debts', icon: HandCoins, label: 'Hutang' },

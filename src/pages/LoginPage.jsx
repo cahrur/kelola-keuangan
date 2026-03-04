@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../stores/authStore';
-import logoImg from '../assets/logo.png';
+import logoImg from '../assets/logo.webp';
 import './AuthPage.css';
 
 export default function LoginPage() {
@@ -16,14 +16,12 @@ export default function LoginPage() {
     const [googleWidth, setGoogleWidth] = useState(300);
 
     useEffect(() => {
-        const measure = () => {
-            if (googleRef.current) {
-                setGoogleWidth(googleRef.current.offsetWidth);
-            }
-        };
-        measure();
-        window.addEventListener('resize', measure);
-        return () => window.removeEventListener('resize', measure);
+        if (!googleRef.current) return;
+        const ro = new ResizeObserver(([entry]) => {
+            setGoogleWidth(Math.round(entry.contentRect.width));
+        });
+        ro.observe(googleRef.current);
+        return () => ro.disconnect();
     }, []);
 
     const handleSubmit = async (e) => {
@@ -58,7 +56,7 @@ export default function LoginPage() {
         <div className="auth-page">
             <div className="auth-card">
                 <div className="auth-card__header">
-                    <img className="auth-card__logo" src={logoImg} alt="Kelola Keuangan" width="64" height="64" />
+                    <img className="auth-card__logo" src={logoImg} alt="Kelola Keuangan" width="64" height="64" fetchPriority="high" />
                     <h1 className="auth-card__title">Masuk</h1>
                     <p className="auth-card__subtitle">Kelola keuanganmu dengan mudah</p>
                 </div>
