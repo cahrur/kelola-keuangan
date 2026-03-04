@@ -1,13 +1,45 @@
-import { useEffect, useState } from 'react';
-import { Settings, DollarSign, Bot, Eye, EyeOff, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useEffect, useState, useCallback } from 'react';
+import { DollarSign, Bot, Bell, Eye, EyeOff, Save, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import useSettingsStore from '../stores/settingsStore';
 import useAIStore from '../stores/aiStore';
 import PageHeader from '../components/layout/PageHeader';
+import {
+    isNotificationSupported,
+    requestNotificationPermission,
+    getNotificationPermission,
+} from '../utils/notification';
 import './SettingsPage.css';
 
+const PERMISSION_LABELS = {
+    granted: 'Aktif',
+    denied: 'Ditolak',
+    default: 'Belum Diizinkan',
+    unsupported: 'Tidak Didukung',
+};
+
+const PERMISSION_CLASSES = {
+    granted: 'notif-status--active',
+    denied: 'notif-status--denied',
+    default: 'notif-status--default',
+    unsupported: 'notif-status--denied',
+};
+
 export default function SettingsPage() {
-    const { currency, setCurrency } = useSettingsStore();
+    const { currency, setCurrency, notificationEnabled, setNotificationEnabled } = useSettingsStore();
     const { aiConfig, fetchAIConfig, updateAIConfig } = useAIStore();
+
+    // Notification state
+    const [notifPermission, setNotifPermission] = useState(getNotificationPermission());
+    const supported = isNotificationSupported();
+
+    // Sync: jika permission dicabut di browser tapi toggle masih on, auto-disable
+    useEffect(() => {
+        const currentPerm = getNotificationPermission();
+        setNotifPermission(currentPerm);
+        if (notificationEnabled && currentPerm !== 'granted') {
+            setNotificationEnabled(false);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // AI config local state
     const [aiBaseUrl, setAiBaseUrl] = useState('');
@@ -31,6 +63,22 @@ export default function SettingsPage() {
             setAiPrompt(aiConfig.custom_prompt || '');
         }
     }, [aiConfig]);
+
+    const handleToggleNotification = useCallback(async () => {
+        if (notificationEnabled) {
+            // Turn off
+            setNotificationEnabled(false);
+            return;
+        }
+
+        // Turn on — request permission first
+        const permission = await requestNotificationPermission();
+        setNotifPermission(permission);
+
+        if (permission === 'granted') {
+            setNotificationEnabled(true);
+        }
+    }, [notificationEnabled, setNotificationEnabled]);
 
     const handleSaveAI = async () => {
         setAiSaving(true);
@@ -60,6 +108,44 @@ export default function SettingsPage() {
     return (
         <div className="page-container">
             <PageHeader title="Pengaturan" />
+
+            {/* Notification */}
+            {supported && (
+                <div className="settings-section">
+                    <div className="settings-section__header">
+                        <Bell size={18} />
+                        <h2>Notifikasi</h2>
+                    </div>
+                    <p className="settings-section__desc">
+                        Pengingat untuk mencatat keuangan setiap jam 20:00 malam.
+                    </p>
+                    <div className="settings-section__content">
+                        <div className="notif-toggle-row">
+                            <div className="notif-toggle-info">
+                                <span className="notif-toggle-label">Pengingat Harian</span>
+                                <span className={`notif-status ${PERMISSION_CLASSES[notifPermission]}`}>
+                                    {PERMISSION_LABELS[notifPermission]}
+                                </span>
+                            </div>
+                            <button
+                                className={`toggle-switch ${notificationEnabled ? 'toggle-switch--on' : ''}`}
+                                onClick={handleToggleNotification}
+                                role="switch"
+                                aria-checked={notificationEnabled}
+                                aria-label="Toggle notifikasi"
+                                disabled={notifPermission === 'denied'}
+                            >
+                                <span className="toggle-switch__thumb" />
+                            </button>
+                        </div>
+                        {notifPermission === 'denied' && (
+                            <p className="notif-denied-hint">
+                                Notifikasi ditolak. Aktifkan izin notifikasi di pengaturan browser untuk mengaktifkan fitur ini.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {/* Currency */}
             <div className="settings-section">

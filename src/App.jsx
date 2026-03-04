@@ -11,6 +11,8 @@ import useWalletStore from './stores/walletStore';
 import useDebtStore from './stores/debtStore';
 import useObligationStore from './stores/obligationStore';
 import useBudgetStore from './stores/budgetStore';
+import useSettingsStore from './stores/settingsStore';
+import { scheduleNightlyReminder } from './utils/notification';
 
 // Auth pages — keep eager for fast initial load
 import LoginPage from './pages/LoginPage';
@@ -43,6 +45,7 @@ function AppContent() {
   const fetchDebts = useDebtStore((s) => s.fetchDebts);
   const fetchObligations = useObligationStore((s) => s.fetchObligations);
   const fetchBudgets = useBudgetStore((s) => s.fetchBudgets);
+  const notificationEnabled = useSettingsStore((s) => s.notificationEnabled);
 
   // After auth confirmed, fetch all data
   useEffect(() => {
@@ -55,6 +58,15 @@ function AppContent() {
       fetchBudgets();
     }
   }, [isAuthenticated, fetchTransactions, fetchCategories, fetchWallets, fetchDebts, fetchObligations, fetchBudgets]);
+
+  // Notification scheduler — runs when user is authenticated and feature enabled
+  useEffect(() => {
+    if (isAuthenticated && notificationEnabled) {
+      scheduleNightlyReminder(true);
+      return () => scheduleNightlyReminder(false);
+    }
+    scheduleNightlyReminder(false);
+  }, [isAuthenticated, notificationEnabled]);
 
   // AppContent is only rendered after auth check completes (isLoading=false)
 
