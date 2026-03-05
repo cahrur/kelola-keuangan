@@ -42,7 +42,7 @@ export default function DebtsPage() {
     }, [debts, tab]);
 
     const activeDebts = filteredDebts.filter((d) => d.status === 'active');
-    const paidDebts = filteredDebts.filter((d) => d.status === 'paid');
+    const paidDebts = filteredDebts.filter((d) => d.status === 'settled');
 
     const resetForm = () => {
         setFormType('i_owe');
@@ -77,7 +77,7 @@ export default function DebtsPage() {
         const isFullyPaid = newPaid >= selectedDebt.amount;
         updateDebt(selectedDebt.id, {
             paidAmount: newPaid,
-            status: isFullyPaid ? 'paid' : 'active',
+            status: isFullyPaid ? 'settled' : 'active',
         });
         setShowPayment(false);
         setSelectedDebt(null);
@@ -102,7 +102,7 @@ export default function DebtsPage() {
         const remaining = getRemaining(debt.id);
         const paid = getPaid(debt.id);
         const percentage = debt.amount > 0 ? (paid / debt.amount) * 100 : 0;
-        const isPaid = debt.status === 'paid';
+        const isPaid = debt.status === 'settled';
         const isOverdue = !isPaid && debt.dueDate && new Date(debt.dueDate) < new Date();
 
         return (

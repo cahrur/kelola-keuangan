@@ -38,10 +38,10 @@ const useDebtStore = create((set, get) => ({
     markAsPaid: async (id) => {
         const debt = get().debts.find((d) => d.id === id);
         if (!debt) return;
-        await api.put(`/debts/${id}`, { status: 'paid', paidAmount: debt.amount });
+        await api.put(`/debts/${id}`, { status: 'settled', paidAmount: debt.amount });
         set((state) => ({
             debts: state.debts.map((d) =>
-                d.id === id ? { ...d, status: 'paid', paidAmount: d.amount } : d
+                d.id === id ? { ...d, status: 'settled', paidAmount: d.amount } : d
             ),
         }));
     },
