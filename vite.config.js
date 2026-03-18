@@ -12,7 +12,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'script-defer',
-      includeAssets: ['logo.png', 'logo-192.png', 'logo.webp', 'logo-192.webp', 'logo-maskable-512.webp', 'logo-maskable-192.webp', 'robots.txt'],
+      includeAssets: ['logo.png', 'logo-192.png', 'logo.webp', 'logo-192.webp', 'logo-maskable-512.webp', 'logo-maskable-512.png', 'logo-maskable-192.webp', 'robots.txt'],
       manifest: {
         id: '/',
         name: 'Kelola Keuangan',
