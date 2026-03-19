@@ -15,7 +15,7 @@ import PageHeader from '../components/layout/PageHeader';
 import './TransactionsPage.css';
 
 export default function TransactionsPage() {
-    const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
+    const { addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
         useTransactionStore();
     const { categories, getCategoryById } = useCategoryStore();
     const { wallets, getWalletById } = useWalletStore();
@@ -41,9 +41,10 @@ export default function TransactionsPage() {
     const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10));
 
     const filteredTransactions = useMemo(() => {
+        const categoryId = filterCategory ? Number(filterCategory) : undefined;
         let results = getFilteredTransactions({
             type: filterType || undefined,
-            categoryId: filterCategory || undefined,
+            categoryId,
             search: search || undefined,
         });
         if (filterDateFrom) {
@@ -53,7 +54,7 @@ export default function TransactionsPage() {
             results = results.filter((t) => t.date <= filterDateTo);
         }
         return results;
-    }, [transactions, filterType, filterCategory, search, filterDateFrom, filterDateTo]);
+    }, [filterType, filterCategory, search, filterDateFrom, filterDateTo, getFilteredTransactions]);
 
     const resetForm = () => {
         setFormType('expense');
@@ -112,7 +113,18 @@ export default function TransactionsPage() {
     };
 
     const filteredCategories = categories.filter((c) => c.type === formType);
+    const filterCategories = categories.filter((c) => !filterType || c.type === filterType);
     const hasActiveFilters = filterType || filterCategory || filterDateFrom || filterDateTo;
+
+    const handleFilterTypeChange = (nextType) => {
+        setFilterType(nextType);
+        if (!nextType || !filterCategory) return;
+
+        const selectedCategory = categories.find((c) => String(c.id) === String(filterCategory));
+        if (selectedCategory && selectedCategory.type !== nextType) {
+            setFilterCategory('');
+        }
+    };
 
     return (
         <div className="page-container">
@@ -151,21 +163,21 @@ export default function TransactionsPage() {
                         <div className="type-toggle">
                             <button
                                 className={`type-toggle__btn ${filterType === '' ? 'type-toggle__btn--active-income' : ''}`}
-                                onClick={() => setFilterType('')}
+                                onClick={() => handleFilterTypeChange('')}
                                 style={filterType === '' ? { background: 'var(--accent-primary-glow)', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)' } : {}}
                             >
                                 Semua
                             </button>
                             <button
                                 className={`type-toggle__btn ${filterType === 'income' ? 'type-toggle__btn--active-income' : ''}`}
-                                onClick={() => setFilterType('income')}
+                                onClick={() => handleFilterTypeChange('income')}
                             >
                                 Pemasukan
                             </button>
                         </div>
                         <button
                             className={`type-toggle__btn ${filterType === 'expense' ? 'type-toggle__btn--active-expense' : ''}`}
-                            onClick={() => setFilterType('expense')}
+                            onClick={() => handleFilterTypeChange('expense')}
                             style={{ width: '100%' }}
                         >
                             Pengeluaran
@@ -175,7 +187,7 @@ export default function TransactionsPage() {
                         <label className="form-label">Kategori</label>
                         <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                             <option value="">Semua Kategori</option>
-                            {categories.map((c) => (
+                            {filterCategories.map((c) => (
                                 <option key={c.id} value={c.id}>{c.name}</option>
                             ))}
                         </select>

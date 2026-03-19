@@ -40,7 +40,10 @@ const useTransactionStore = create((set, get) => ({
     getFilteredTransactions: ({ type, categoryId, startDate, endDate, search }) => {
         let filtered = get().transactions;
         if (type) filtered = filtered.filter((t) => t.type === type);
-        if (categoryId) filtered = filtered.filter((t) => t.categoryId === categoryId);
+        if (categoryId !== undefined && categoryId !== null && categoryId !== '') {
+            const targetCategoryId = Number(categoryId);
+            filtered = filtered.filter((t) => Number(t.categoryId) === targetCategoryId);
+        }
         if (startDate) filtered = filtered.filter((t) => t.date >= startDate);
         if (endDate) filtered = filtered.filter((t) => t.date <= endDate);
         if (search) {
