@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Plus, ArrowRightLeft, Pencil, Trash2, Wallet, Building, Smartphone, CreditCard, PiggyBank, Banknote, ScrollText } from 'lucide-react';
 import useWalletStore from '../stores/walletStore';
 import useSettingsStore from '../stores/settingsStore';
@@ -17,6 +17,43 @@ const COLOR_OPTIONS = [
     '#e84393', '#00cec9', '#d63031', '#a29bfe', '#636e72',
 ];
 
+const formatDateInput = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
+const getCurrentMonthRange = () => {
+    const now = new Date();
+    const from = new Date(now.getFullYear(), now.getMonth(), 1);
+    const to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return {
+        from: formatDateInput(from),
+        to: formatDateInput(to),
+    };
+};
+
+const getMutationFlags = (type) => {
+    const isTransferIn = type === 'transfer_in' || type === 'transferIn';
+    const isTransferOut = type === 'transfer_out' || type === 'transferOut';
+    const isAdjustmentIn = type === 'adjust_in' || type === 'adjustIn';
+    const isAdjustmentOut = type === 'adjust_out' || type === 'adjustOut';
+    const isIncome = type === 'income' || isTransferIn || isAdjustmentIn;
+    const isTransfer = isTransferIn || isTransferOut;
+    const isAdjustment = isAdjustmentIn || isAdjustmentOut;
+
+    return {
+        isTransferIn,
+        isTransferOut,
+        isAdjustmentIn,
+        isAdjustmentOut,
+        isIncome,
+        isTransfer,
+        isAdjustment,
+    };
+};
+
 export default function WalletsPage() {
     const { wallets, addWallet, updateWallet, deleteWallet, adjustBalance, transfer, fetchMutations, getTotalBalance } = useWalletStore();
     const { currency } = useSettingsStore();
@@ -31,6 +68,9 @@ export default function WalletsPage() {
     const [mutationsWallet, setMutationsWallet] = useState(null);
     const [mutations, setMutations] = useState([]);
     const [loadingMutations, setLoadingMutations] = useState(false);
+    const [mutationDateFrom, setMutationDateFrom] = useState(getCurrentMonthRange().from);
+    const [mutationDateTo, setMutationDateTo] = useState(getCurrentMonthRange().to);
+    const [mutationTypeFilter, setMutationTypeFilter] = useState('all');
 
     // Form
     const [formName, setFormName] = useState('');
@@ -113,8 +153,16 @@ export default function WalletsPage() {
         }
     };
 
+    const resetMutationFilters = () => {
+        const monthRange = getCurrentMonthRange();
+        setMutationDateFrom(monthRange.from);
+        setMutationDateTo(monthRange.to);
+        setMutationTypeFilter('all');
+    };
+
     const openMutations = async (w) => {
         setMutationsWallet(w);
+        resetMutationFilters();
         setShowMutations(true);
         setLoadingMutations(true);
         try {
@@ -126,6 +174,22 @@ export default function WalletsPage() {
             setLoadingMutations(false);
         }
     };
+
+    const filteredMutations = mutations.filter((m) => {
+        if (mutationDateFrom && m.date < mutationDateFrom) return false;
+        if (mutationDateTo && m.date > mutationDateTo) return false;
+
+        if (mutationTypeFilter === 'all') return true;
+
+        const flags = getMutationFlags(m.type);
+
+        if (mutationTypeFilter === 'income') return m.type === 'income';
+        if (mutationTypeFilter === 'expense') return m.type === 'expense';
+        if (mutationTypeFilter === 'transfer') return flags.isTransfer;
+        if (mutationTypeFilter === 'adjustment') return flags.isAdjustment;
+
+        return true;
+    });
 
     return (
         <div className="page-container">
@@ -246,7 +310,7 @@ export default function WalletsPage() {
             </Modal>
 
             {/* Adjust Balance Modal */}
-            <Modal isOpen={showAdjust} onClose={() => { setShowAdjust(false); setAdjustWallet(null); setAdjustDescription(''); }} title={`Sesuaikan Saldo — ${adjustWallet?.name || ''}`}>
+            <Modal isOpen={showAdjust} onClose={() => { setShowAdjust(false); setAdjustWallet(null); setAdjustDescription(''); }} title={`Sesuaikan Saldo - ${adjustWallet?.name || ''}`}>
                 <form onSubmit={handleAdjust}>
                     <div className="type-toggle mb-md">
                         <button type="button" className={`type-toggle__btn ${adjustType === 'add' ? 'type-toggle__btn--active-income' : ''}`} onClick={() => setAdjustType('add')}>
@@ -285,39 +349,64 @@ export default function WalletsPage() {
             />
 
             {/* Mutations Modal */}
-            <Modal isOpen={showMutations} onClose={() => { setShowMutations(false); setMutationsWallet(null); setMutations([]); }} title={`Mutasi — ${mutationsWallet?.name || ''}`}>
+            <Modal isOpen={showMutations} onClose={() => { setShowMutations(false); setMutationsWallet(null); setMutations([]); resetMutationFilters(); }} title={`Mutasi - ${mutationsWallet?.name || ''}`}>
                 {loadingMutations ? (
                     <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Memuat...</div>
-                ) : mutations.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Belum ada mutasi</div>
                 ) : (
-                    <div className="mutations-list">
-                        {mutations.map((m, i) => {
-                            const isIncome = m.type === 'income' || m.type === 'transferIn' || m.type === 'adjustIn';
-                            const isTransfer = m.type === 'transferIn' || m.type === 'transferOut';
-                            const isAdjustment = m.type === 'adjustIn' || m.type === 'adjustOut';
-                            return (
-                                <div key={`${m.type}-${m.id}-${i}`} className="mutation-item">
-                                    <div className="mutation-item__info">
-                                        <span className="mutation-item__desc">{m.description}</span>
-                                        <span className="mutation-item__meta">
-                                            {isTransfer
-                                                ? (m.type === 'transferIn' ? '↓ Transfer Masuk' : '↑ Transfer Keluar')
-                                                : isAdjustment
-                                                    ? (m.type === 'adjustIn' ? '↑ Penyesuaian Tambah' : '↓ Penyesuaian Kurang')
-                                                    : (m.type === 'income' ? 'Pemasukan' : 'Pengeluaran')}
-                                            {' · '}{formatShortDate(m.date)}
+                    <>
+                        <div className="form-row mb-md">
+                            <div className="form-group">
+                                <label className="form-label">Dari Tanggal</label>
+                                <input type="date" value={mutationDateFrom} onChange={(e) => setMutationDateFrom(e.target.value)} />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Sampai Tanggal</label>
+                                <input type="date" value={mutationDateTo} onChange={(e) => setMutationDateTo(e.target.value)} />
+                            </div>
+                        </div>
+                        <div className="form-group mb-md">
+                            <label className="form-label">Jenis</label>
+                            <select value={mutationTypeFilter} onChange={(e) => setMutationTypeFilter(e.target.value)}>
+                                <option value="all">Semua</option>
+                                <option value="income">Pemasukan</option>
+                                <option value="expense">Pengeluaran</option>
+                                <option value="transfer">Transfer</option>
+                                <option value="adjustment">Penyesuaian</option>
+                            </select>
+                        </div>
+                    </>
+                )}
+                {!loadingMutations && (
+                    filteredMutations.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>Belum ada mutasi</div>
+                    ) : (
+                        <div className="mutations-list">
+                            {filteredMutations.map((m, i) => {
+                                const { isTransferIn, isAdjustmentIn, isIncome, isTransfer, isAdjustment } = getMutationFlags(m.type);
+                                return (
+                                    <div key={`${m.type}-${m.id}-${i}`} className="mutation-item">
+                                        <div className="mutation-item__info">
+                                            <span className="mutation-item__desc">{m.description}</span>
+                                            <span className="mutation-item__meta">
+                                                {isTransfer
+                                                    ? (isTransferIn ? 'Transfer Masuk' : 'Transfer Keluar')
+                                                    : isAdjustment
+                                                        ? (isAdjustmentIn ? 'Penyesuaian Tambah' : 'Penyesuaian Kurang')
+                                                        : (m.type === 'income' ? 'Pemasukan' : 'Pengeluaran')}
+                                                {' - '}{formatShortDate(m.date)}
+                                            </span>
+                                        </div>
+                                        <span className={`mutation-item__amount ${isIncome ? 'text-income' : 'text-expense'}`}>
+                                            {isIncome ? '+' : '-'}{formatCurrency(m.amount, currency)}
                                         </span>
                                     </div>
-                                    <span className={`mutation-item__amount ${isIncome ? 'text-income' : 'text-expense'}`}>
-                                        {isIncome ? '+' : '-'}{formatCurrency(m.amount, currency)}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
+                                );
+                            })}
+                        </div>
+                    )
                 )}
             </Modal>
         </div>
     );
 }
+
