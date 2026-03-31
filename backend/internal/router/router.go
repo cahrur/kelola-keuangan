@@ -102,6 +102,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 			protected.GET("/wallets", walletHandler.List)
 			protected.POST("/wallets", walletHandler.Create)
 			protected.POST("/wallets/transfer", walletHandler.Transfer)
+			protected.POST("/wallets/:id/adjust", walletHandler.Adjust)
 			protected.GET("/wallets/:id/mutations", walletHandler.Mutations)
 			protected.PUT("/wallets/:id", walletHandler.Update)
 			protected.DELETE("/wallets/:id", walletHandler.Delete)

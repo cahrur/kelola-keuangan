@@ -45,6 +45,7 @@ export default function WalletsPage() {
     // Adjust
     const [adjustAmount, setAdjustAmount] = useState('');
     const [adjustType, setAdjustType] = useState('add');
+    const [adjustDescription, setAdjustDescription] = useState('');
 
     const totalBalance = getTotalBalance();
 
@@ -98,10 +99,11 @@ export default function WalletsPage() {
         e.preventDefault();
         if (!adjustAmount || !adjustWallet) return;
         const amount = parseFloat(adjustAmount);
-        adjustBalance(adjustWallet.id, adjustType === 'add' ? amount : -amount);
+        adjustBalance(adjustWallet.id, amount, adjustType, adjustDescription.trim());
         setShowAdjust(false);
         setAdjustWallet(null);
         setAdjustAmount('');
+        setAdjustDescription('');
     };
 
     const handleDelete = () => {
@@ -173,7 +175,7 @@ export default function WalletsPage() {
                             </button>
                             <button
                                 className="txn-action-btn"
-                                onClick={() => { setAdjustWallet(w); setAdjustType('add'); setAdjustAmount(''); setShowAdjust(true); }}
+                                onClick={() => { setAdjustWallet(w); setAdjustType('add'); setAdjustAmount(''); setAdjustDescription(''); setShowAdjust(true); }}
                                 title="Sesuaikan saldo"
                             >
                                 <Banknote size={14} />
@@ -244,7 +246,7 @@ export default function WalletsPage() {
             </Modal>
 
             {/* Adjust Balance Modal */}
-            <Modal isOpen={showAdjust} onClose={() => { setShowAdjust(false); setAdjustWallet(null); }} title={`Sesuaikan Saldo — ${adjustWallet?.name || ''}`}>
+            <Modal isOpen={showAdjust} onClose={() => { setShowAdjust(false); setAdjustWallet(null); setAdjustDescription(''); }} title={`Sesuaikan Saldo — ${adjustWallet?.name || ''}`}>
                 <form onSubmit={handleAdjust}>
                     <div className="type-toggle mb-md">
                         <button type="button" className={`type-toggle__btn ${adjustType === 'add' ? 'type-toggle__btn--active-income' : ''}`} onClick={() => setAdjustType('add')}>
@@ -257,6 +259,17 @@ export default function WalletsPage() {
                     <div className="form-group">
                         <label className="form-label">Jumlah</label>
                         <CurrencyInput placeholder="0" value={adjustAmount} onChange={(val) => setAdjustAmount(val)} required />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Keterangan</label>
+                        <textarea
+                            rows={3}
+                            placeholder="Contoh: Koreksi saldo setelah cek rekening"
+                            value={adjustDescription}
+                            onChange={(e) => setAdjustDescription(e.target.value)}
+                            maxLength={500}
+                            required
+                        />
                     </div>
                     <Button type="submit" fullWidth className="mt-md">Sesuaikan</Button>
                 </form>
@@ -280,14 +293,19 @@ export default function WalletsPage() {
                 ) : (
                     <div className="mutations-list">
                         {mutations.map((m, i) => {
-                            const isIncome = m.type === 'income' || m.type === 'transferIn';
+                            const isIncome = m.type === 'income' || m.type === 'transferIn' || m.type === 'adjustIn';
                             const isTransfer = m.type === 'transferIn' || m.type === 'transferOut';
+                            const isAdjustment = m.type === 'adjustIn' || m.type === 'adjustOut';
                             return (
                                 <div key={`${m.type}-${m.id}-${i}`} className="mutation-item">
                                     <div className="mutation-item__info">
                                         <span className="mutation-item__desc">{m.description}</span>
                                         <span className="mutation-item__meta">
-                                            {isTransfer ? (m.type === 'transferIn' ? '↓ Transfer Masuk' : '↑ Transfer Keluar') : (m.type === 'income' ? 'Pemasukan' : 'Pengeluaran')}
+                                            {isTransfer
+                                                ? (m.type === 'transferIn' ? '↓ Transfer Masuk' : '↑ Transfer Keluar')
+                                                : isAdjustment
+                                                    ? (m.type === 'adjustIn' ? '↑ Penyesuaian Tambah' : '↓ Penyesuaian Kurang')
+                                                    : (m.type === 'income' ? 'Pemasukan' : 'Pengeluaran')}
                                             {' · '}{formatShortDate(m.date)}
                                         </span>
                                     </div>

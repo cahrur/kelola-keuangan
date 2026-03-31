@@ -23,7 +23,7 @@ type CreateTransferRequest struct {
 // MutationItem is a unified view for both transactions and transfers
 type MutationItem struct {
 	ID          uint      `json:"id"`
-	Type        string    `json:"type"` // "income", "expense", "transfer_in", "transfer_out"
+	Type        string    `json:"type"` // "income", "expense", "transfer_in", "transfer_out", "adjust_in", "adjust_out"
 	Amount      float64   `json:"amount"`
 	Description string    `json:"description"`
 	Date        string    `json:"date"`

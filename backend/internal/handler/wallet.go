@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"catat-keuangan-backend/internal/model"
@@ -167,6 +168,74 @@ func (h *WalletHandler) Transfer(c *gin.Context) {
 	})
 }
 
+func (h *WalletHandler) Adjust(c *gin.Context) {
+	userID, _ := c.Get("userID")
+	walletID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
+
+	var req model.AdjustWalletBalanceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		util.ValidationError(c, "Validation failed", err.Error())
+		return
+	}
+
+	var wallet model.Wallet
+	if err := h.DB.Where("id = ? AND user_id = ?", walletID, userID).First(&wallet).Error; err != nil {
+		util.Error(c, http.StatusNotFound, "Wallet not found")
+		return
+	}
+
+	signedAmount := req.Amount
+	if req.Type == "subtract" {
+		signedAmount = -req.Amount
+	}
+
+	desc := strings.TrimSpace(req.Description)
+	if desc == "" {
+		if req.Type == "add" {
+			desc = "Penyesuaian saldo (tambah)"
+		} else {
+			desc = "Penyesuaian saldo (kurangi)"
+		}
+	}
+
+	adjustment := model.WalletAdjustment{
+		UserID:      userID.(uint),
+		WalletID:    wallet.ID,
+		Type:        req.Type,
+		Amount:      req.Amount,
+		Description: desc,
+		Date:        time.Now().Format("2006-01-02"),
+	}
+
+	var updatedWallet model.Wallet
+	err := h.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&adjustment).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&model.Wallet{}).
+			Where("id = ? AND user_id = ?", wallet.ID, userID).
+			Update("balance", gorm.Expr("balance + ?", signedAmount)).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("id = ? AND user_id = ?", wallet.ID, userID).First(&updatedWallet).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		util.Error(c, http.StatusInternalServerError, "Gagal menyesuaikan saldo")
+		return
+	}
+
+	util.Success(c, http.StatusCreated, "Saldo berhasil disesuaikan", gin.H{
+		"wallet":     updatedWallet,
+		"adjustment": adjustment,
+	})
+}
+
 func (h *WalletHandler) Mutations(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	walletID, _ := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -240,6 +309,36 @@ func (h *WalletHandler) Mutations(c *gin.Context) {
 			Date:        tr.Date,
 			CreatedAt:   tr.CreatedAt,
 			WalletName:  otherWalletName,
+		})
+	}
+
+	// Get balance adjustments for this wallet
+	var adjustments []model.WalletAdjustment
+	h.DB.Where("wallet_id = ? AND user_id = ?", walletID, userID).
+		Order("date DESC, created_at DESC").Find(&adjustments)
+
+	for _, adj := range adjustments {
+		mutType := "adjust_in"
+		if adj.Type == "subtract" {
+			mutType = "adjust_out"
+		}
+
+		desc := adj.Description
+		if desc == "" {
+			if mutType == "adjust_in" {
+				desc = "Penyesuaian saldo (tambah)"
+			} else {
+				desc = "Penyesuaian saldo (kurangi)"
+			}
+		}
+
+		mutations = append(mutations, model.MutationItem{
+			ID:          adj.ID,
+			Type:        mutType,
+			Amount:      adj.Amount,
+			Description: desc,
+			Date:        adj.Date,
+			CreatedAt:   adj.CreatedAt,
 		})
 	}
 

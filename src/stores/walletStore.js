@@ -32,16 +32,19 @@ const useWalletStore = create((set, get) => ({
         set((state) => ({ wallets: state.wallets.filter((w) => w.id !== id) }));
     },
 
-    adjustBalance: async (id, amount) => {
-        const wallet = get().wallets.find((w) => w.id === id);
-        if (!wallet) return;
-        const newBalance = wallet.balance + amount;
-        await api.put(`/wallets/${id}`, { balance: newBalance });
+    adjustBalance: async (id, amount, type = 'add', description = '') => {
+        const { data } = await api.post(`/wallets/${id}/adjust`, {
+            amount,
+            type,
+            description,
+        });
+        const updatedWallet = data.data.wallet;
         set((state) => ({
             wallets: state.wallets.map((w) =>
-                w.id === id ? { ...w, balance: newBalance } : w
+                w.id === id ? updatedWallet : w
             ),
         }));
+        return data.data;
     },
 
     transfer: async (fromId, toId, amount, description) => {
