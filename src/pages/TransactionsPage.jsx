@@ -15,7 +15,7 @@ import PageHeader from '../components/layout/PageHeader';
 import './TransactionsPage.css';
 
 export default function TransactionsPage() {
-    const { addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
+    const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
         useTransactionStore();
     const { categories, getCategoryById } = useCategoryStore();
     const { wallets, getWalletById } = useWalletStore();
@@ -54,7 +54,7 @@ export default function TransactionsPage() {
             results = results.filter((t) => t.date <= filterDateTo);
         }
         return results;
-    }, [filterType, filterCategory, search, filterDateFrom, filterDateTo, getFilteredTransactions]);
+    }, [transactions, filterType, filterCategory, search, filterDateFrom, filterDateTo, getFilteredTransactions]);
 
     const resetForm = () => {
         setFormType('expense');
