@@ -25,6 +25,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
+	r.Use(middleware.SecurityHeaders())
 
 	// CORS from .env
 	r.Use(cors.New(cors.Config{
