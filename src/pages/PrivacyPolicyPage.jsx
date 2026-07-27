@@ -1,5 +1,5 @@
 import { Shield, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import './PolicyPage.css';
 
 export default function PrivacyPolicyPage() {

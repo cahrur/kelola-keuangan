@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router';
 import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X, LogOut, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '../../stores/authStore';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { TrendingUp, TrendingDown, Wallet, ArrowRight, Sparkles, RefreshCw, Bell } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import useTransactionStore from '../stores/transactionStore';

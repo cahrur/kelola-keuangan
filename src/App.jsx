@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import BottomNav from './components/layout/BottomNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';

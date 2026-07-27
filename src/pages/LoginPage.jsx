@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { GoogleLogin } from '@react-oauth/google';
 import useAuthStore from '../stores/authStore';
 import TurnstileWidget from '../components/ui/TurnstileWidget';

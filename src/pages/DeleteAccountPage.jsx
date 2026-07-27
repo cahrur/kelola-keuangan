@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ArrowLeft, AlertTriangle, Send, CheckCircle, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import useAuthStore from '../stores/authStore';
 import './PolicyPage.css';
 

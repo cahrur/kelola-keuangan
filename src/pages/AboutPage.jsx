@@ -1,5 +1,5 @@
 import { Building2, Mail, Sparkles, Wallet, PieChart, Bot, Shield, BarChart3, Globe, Code2, ArrowRight, ExternalLink, FileText, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import PageHeader from '../components/layout/PageHeader';
 import Card from '../components/ui/Card';
 import logoImg from '../assets/logo.webp';
