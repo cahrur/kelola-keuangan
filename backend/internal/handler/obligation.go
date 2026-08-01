@@ -45,6 +45,7 @@ func (h *ObligationHandler) Create(c *gin.Context) {
 		Amount:      req.Amount,
 		AutoRecord:  req.AutoRecord,
 		CategoryID:  req.CategoryID,
+		WalletID:    req.WalletID,
 	}
 
 	if err := h.DB.Create(&obligation).Error; err != nil {
@@ -95,6 +96,9 @@ func (h *ObligationHandler) Update(c *gin.Context) {
 	}
 	if req.CategoryID != nil {
 		updates["category_id"] = *req.CategoryID
+	}
+	if req.WalletID != nil {
+		updates["wallet_id"] = *req.WalletID
 	}
 
 	h.DB.Model(&obligation).Updates(updates)

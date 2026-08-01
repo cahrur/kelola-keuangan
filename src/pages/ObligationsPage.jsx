@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, CalendarCheck, CheckCircle, Circle, RefreshCw, Cl
 import useObligationStore from '../stores/obligationStore';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
+import useWalletStore from '../stores/walletStore';
 import useSettingsStore from '../stores/settingsStore';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import Card from '../components/ui/Card';
@@ -18,6 +19,7 @@ export default function ObligationsPage() {
     const { obligations, addObligation, updateObligation, deleteObligation, togglePeriod, isPeriodPaid, getPeriodsForObligation, getTotalMonthlyAmount } = useObligationStore();
     const { addTransaction } = useTransactionStore();
     const { categories } = useCategoryStore();
+    const { wallets } = useWalletStore();
     const { currency } = useSettingsStore();
 
     const [showForm, setShowForm] = useState(false);
@@ -35,6 +37,7 @@ export default function ObligationsPage() {
     const [formAmount, setFormAmount] = useState('');
     const [formAutoRecord, setFormAutoRecord] = useState(true);
     const [formCategory, setFormCategory] = useState('');
+    const [formWallet, setFormWallet] = useState('');
 
     const expenseCategories = categories.filter((c) => c.type === 'expense');
 
@@ -53,6 +56,7 @@ export default function ObligationsPage() {
         setFormAmount('');
         setFormAutoRecord(true);
         setFormCategory('');
+        setFormWallet('');
         setEditingObligation(null);
     };
 
@@ -66,12 +70,13 @@ export default function ObligationsPage() {
         setFormAmount(o.amount.toString());
         setFormAutoRecord(o.autoRecord);
         setFormCategory(o.categoryId ? o.categoryId.toString() : '');
+        setFormWallet(o.walletId ? o.walletId.toString() : '');
         setShowForm(true);
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!formName || !formAmount || !formStart) return;
+        if (!formName || !formAmount || !formStart || !formCategory || !formWallet) return;
 
         const data = {
             name: formName,
@@ -82,6 +87,7 @@ export default function ObligationsPage() {
             amount: parseFloat(formAmount),
             autoRecord: formAutoRecord,
             categoryId: formCategory ? parseInt(formCategory) : null,
+            walletId: formWallet ? parseInt(formWallet) : null,
         };
 
         if (editingObligation) {
@@ -104,6 +110,7 @@ export default function ObligationsPage() {
                 amount: obligation.amount,
                 description: `${obligation.name} — ${periodKey}`,
                 categoryId: obligation.categoryId || '',
+                walletId: obligation.walletId || null,
                 date: new Date().toISOString().slice(0, 10),
             });
         }
@@ -230,14 +237,25 @@ export default function ObligationsPage() {
             {/* Add/Edit Modal */}
             <Modal isOpen={showForm} onClose={() => { setShowForm(false); resetForm(); }} title={editingObligation ? 'Edit Tanggungan' : 'Tanggungan Baru'}>
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label className="form-label">Kategori Pengeluaran</label>
-                        <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} required>
-                            <option value="">Pilih Kategori</option>
-                            {expenseCategories.map((c) => (
-                                <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                        </select>
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label className="form-label">Kategori</label>
+                            <select value={formCategory} onChange={(e) => setFormCategory(e.target.value)} required>
+                                <option value="">Pilih</option>
+                                {expenseCategories.map((c) => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label className="form-label">Kantong</label>
+                            <select value={formWallet} onChange={(e) => setFormWallet(e.target.value)} required>
+                                <option value="">Pilih</option>
+                                {wallets.map((w) => (
+                                    <option key={w.id} value={w.id}>{w.name}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="form-group">

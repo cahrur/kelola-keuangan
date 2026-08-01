@@ -38,6 +38,7 @@ const useObligationStore = create((set, get) => ({
             amount: data_.amount,
             autoRecord: data_.autoRecord || false,
             categoryId: data_.categoryId || null,
+            walletId: data_.walletId || null,
         };
         const { data } = await api.post('/obligations', payload);
         set((state) => ({
