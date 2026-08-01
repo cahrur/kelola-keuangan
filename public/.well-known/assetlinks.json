@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mudahdeal.kk",
+      "sha256_cert_fingerprints": [
+        "89:79:1C:25:6F:E2:6E:A0:FC:A0:50:29:5E:2A:E6:FE:C5:B4:7A:CA:53:C7:43:05:BA:3E:C7:6A:42:32:BA:F7"
+      ]
+    }
+  }
+]
