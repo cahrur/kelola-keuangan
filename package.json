@@ -39,7 +39,7 @@
     "form-data": "^4.0.6",
     "eslint": {
       "minimatch": {
-        "brace-expansion": "^1.1.16"
+        "brace-expansion": "^1.1.18"
       }
     },
     "vite-plugin-pwa": {
@@ -49,7 +49,7 @@
             "jake": {
               "filelist": {
                 "minimatch": {
-                  "brace-expansion": "^2.1.2"
+                  "brace-expansion": "^2.1.4"
                 }
               }
             }
@@ -57,14 +57,15 @@
         },
         "glob": {
           "minimatch": {
-            "brace-expansion": "^5.0.8"
+            "brace-expansion": "^5.0.9"
           }
         }
       }
     },
-    "fast-uri": "^3.1.4",
-    "js-yaml": "^4.3.0",
+    "fast-uri": "^3.1.5",
+    "js-yaml": "^4.3.1",
     "@babel/core": "^7.29.7",
-    "postcss": "^8.5.18"
+    "postcss": "^8.5.18",
+    "nanoid": "^3.3.18"
   }
 }
