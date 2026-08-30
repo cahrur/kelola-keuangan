@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!--
+        The theme the app actually runs under: BridgeActivity.onCreate() calls
+        setTheme(AppTheme_NoActionBar), so anything set on the launch theme below is
+        only visible on the starting window.
+
+        Parent is pinned to Light (not DayNight) because the web app ships a single
+        light palette — following the system dark mode would tint the window behind
+        it and break the design on dark-mode devices.
+    -->
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+        <!-- Light app surface behind the bars, so the bar icons must be dark -->
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- Android <15 draws real bars; 15+ ignores these and uses the container colour -->
+        <item name="android:statusBarColor">@color/systemBarSurface</item>
+        <!-- No light-nav-bar icons before API 27, so keep that bar dark there -->
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <!-- Starting window, drawn before onCreate() runs -->
+    <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+        <item name="android:background">@drawable/splash</item>
+        <!-- Splash ground is dark, so the bar icons stay light here -->
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

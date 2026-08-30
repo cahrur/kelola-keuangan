@@ -1,0 +1,17 @@
+{
+  "appId": "com.mudahdeal.kelolakeuangan",
+  "appName": "Kelola Keuangan",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_reminder",
+      "iconColor": "#3b987b"
+    }
+  }
+}

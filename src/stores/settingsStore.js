@@ -9,6 +9,11 @@ const useSettingsStore = create(
 
             notificationEnabled: false,
             setNotificationEnabled: (notificationEnabled) => set({ notificationEnabled }),
+
+            // The Android build asks for the notification permission once on first
+            // launch; this records that it did, so later launches never nag.
+            notificationPromptSeen: false,
+            setNotificationPromptSeen: (notificationPromptSeen) => set({ notificationPromptSeen }),
         }),
         { name: 'kelolaku-settings' }
     )

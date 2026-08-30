@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Icon for the Android 12+ system splash. Sized so the platform scales it to match
+  .splash__logo in SplashScreen.css on screen. The platform enlarges this drawable
+  to fill its icon box (~1.8x here), so 44dp renders at the 80px the web splash
+  uses — measured on device, not derived from the spec.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:gravity="center"
+        android:width="44dp"
+        android:height="44dp"
+        android:drawable="@drawable/splash_logo" />
+</layer-list>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kelola Keuangan</string>
+    <string name="title_activity_main">Kelola Keuangan</string>
+    <string name="package_name">com.mudahdeal.kelolakeuangan</string>
+    <string name="custom_url_scheme">com.mudahdeal.kelolakeuangan</string>
+</resources>

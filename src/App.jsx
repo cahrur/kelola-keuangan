@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import BottomNav from './components/layout/BottomNav';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import NativeShell from './components/layout/NativeShell';
 import SplashScreen from './components/ui/SplashScreen';
 import useAuthStore from './stores/authStore';
 import useTransactionStore from './stores/transactionStore';
@@ -13,6 +14,7 @@ import useObligationStore from './stores/obligationStore';
 import useBudgetStore from './stores/budgetStore';
 import useSettingsStore from './stores/settingsStore';
 import { scheduleNightlyReminder } from './utils/notification';
+import { isNative } from './utils/platform';
 
 // Auth pages — keep eager for fast initial load
 import LoginPage from './pages/LoginPage';
@@ -61,11 +63,12 @@ function AppContent() {
 
   // Notification scheduler — runs when user is authenticated and feature enabled
   useEffect(() => {
-    if (isAuthenticated && notificationEnabled) {
-      scheduleNightlyReminder(true);
-      return () => scheduleNightlyReminder(false);
-    }
-    scheduleNightlyReminder(false);
+    scheduleNightlyReminder(isAuthenticated && notificationEnabled);
+
+    // The Android alarm is registered with the OS and must outlive this
+    // component — cancelling it on unmount is exactly what would stop it from
+    // firing while the app is closed. Only the web interval needs tearing down.
+    return isNative ? undefined : () => scheduleNightlyReminder(false);
   }, [isAuthenticated, notificationEnabled]);
 
   // AppContent is only rendered after auth check completes (isLoading=false)
@@ -119,12 +122,17 @@ export default function App() {
   // Show splash until BOTH animation finishes AND auth check completes
   const showSplash = !splashAnimDone || isLoading;
 
-  return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <BrowserRouter>
-        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-        {!showSplash && <AppContent />}
-      </BrowserRouter>
-    </GoogleOAuthProvider>
+  const routes = (
+    <BrowserRouter>
+      <NativeShell />
+      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+      {!showSplash && <AppContent />}
+    </BrowserRouter>
   );
+
+  // The provider pulls in Google Identity Services, which refuses to run inside
+  // a WebView — the native build has no Google sign-in button to feed anyway.
+  if (isNative) return routes;
+
+  return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{routes}</GoogleOAuthProvider>;
 }

@@ -7,6 +7,7 @@ import {
     isNotificationSupported,
     requestNotificationPermission,
     getNotificationPermission,
+    refreshNotificationPermission,
 } from '../utils/notification';
 import './SettingsPage.css';
 
@@ -34,11 +35,16 @@ export default function SettingsPage() {
 
     // Sync: jika permission dicabut di browser tapi toggle masih on, auto-disable
     useEffect(() => {
-        const currentPerm = getNotificationPermission();
-        setNotifPermission(currentPerm);
-        if (notificationEnabled && currentPerm !== 'granted') {
-            setNotificationEnabled(false);
-        }
+        // Native reads the permission from the OS, so this has to be awaited.
+        let active = true;
+        refreshNotificationPermission().then((currentPerm) => {
+            if (!active) return;
+            setNotifPermission(currentPerm);
+            if (notificationEnabled && currentPerm !== 'granted') {
+                setNotificationEnabled(false);
+            }
+        });
+        return () => { active = false; };
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // AI config local state
@@ -140,7 +146,7 @@ export default function SettingsPage() {
                         </div>
                         {notifPermission === 'denied' && (
                             <p className="notif-denied-hint">
-                                Notifikasi ditolak. Aktifkan izin notifikasi di pengaturan browser untuk mengaktifkan fitur ini.
+                                Notifikasi ditolak. Aktifkan izin notifikasi di pengaturan perangkat untuk mengaktifkan fitur ini.
                             </p>
                         )}
                     </div>
@@ -271,7 +277,7 @@ export default function SettingsPage() {
             {/* App Info */}
             <div className="app-info mt-lg">
                 <p className="app-info__name">Kelola Keuangan</p>
-                <p className="app-info__version">v1.0.0 — Aplikasi Pengelola Keuangan Pribadi</p>
+                <p className="app-info__version">v1.1.0 — Aplikasi Pengelola Keuangan Pribadi</p>
             </div>
         </div>
     );

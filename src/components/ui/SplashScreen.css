@@ -140,3 +140,10 @@
         transform: translateY(0);
     }
 }
+/* Handoff from the native splash: the logo is already on screen at full size,
+   so it must not animate in again. The rings and text still fade in. */
+.splash--handoff .splash__logo {
+    opacity: 1;
+    transform: none;
+    animation: none;
+}

@@ -1,0 +1,43 @@
+# Build context only needs what the Dockerfile COPYs: package*.json, index.html,
+# vite.config.js, public/, src/ and the prebuilt backend/server-backend binary.
+# Everything below is either rebuilt in the image, irrelevant to it, or must not
+# be shipped into a build context at all.
+
+# === SECRETS ===
+# Real credentials live here (JWT_SECRET, SMTP_PASS, AI_API_KEY). Coolify passes
+# what the build needs as build args instead.
+.env
+.env.*
+!.env.example
+!.env.native.example
+
+# === DEPENDENCIES & BUILD OUTPUT ===
+node_modules/
+dist/
+build/
+
+# === ANDROID (Capacitor) ===
+# The native shell is built locally with Gradle, never inside this image.
+android/
+capacitor.config.json
+
+# === GO SOURCE ===
+# Only the prebuilt linux binary is copied; the sources are not compiled here.
+backend/cmd/
+backend/internal/
+backend/go.mod
+backend/go.sum
+backend/server.exe
+
+# === VCS, TOOLING, DOCS ===
+.git/
+.gitignore
+.github/
+.claude/
+.vscode/
+.idea/
+eslint.config.js
+README.md
+roadmap.md
+*.log
+coverage/

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { GoogleLogin } from '@react-oauth/google';
+import GoogleAuthButton from '../components/ui/GoogleAuthButton';
 import useAuthStore from '../stores/authStore';
 import TurnstileWidget from '../components/ui/TurnstileWidget';
 import {
     getAuthErrorMessage,
     normalizePhone,
-    validateGooglePhone,
     validateRegisterForm,
 } from '../utils/authValidation';
 import logoImg from '../assets/logo.webp';
@@ -32,8 +31,6 @@ export default function RegisterPage() {
     const [googleWidth, setGoogleWidth] = useState(300);
 
     // Google OAuth: phone step
-    const [googleStep, setGoogleStep] = useState(null);
-    const [googlePhone, setGooglePhone] = useState('');
 
     useEffect(() => {
         if (!googleRef.current) return;
@@ -92,36 +89,17 @@ export default function RegisterPage() {
         }
     };
 
-    const handleGoogleSuccess = (credentialResponse) => {
+    // Daftar via Google tidak meminta nomor: backend membuat akun langsung dari
+    // ID token, dan kolom phone memang opsional. Alurnya jadi satu ketukan,
+    // sama seperti tombol Google di halaman Masuk.
+    const handleGoogleSuccess = async (credentialResponse) => {
         setSubmitError('');
         setTurnstileError('');
-        setTurnstileToken('');
-        setGoogleStep({ credential: credentialResponse.credential });
-    };
-
-    const handleGoogleComplete = async (e) => {
-        e.preventDefault();
-        setSubmitError('');
-        setTurnstileError('');
-
-        const phoneError = validateGooglePhone(googlePhone);
-        if (phoneError) {
-            setFieldErrors({ googlePhone: phoneError });
-            return;
-        }
-
-        setFieldErrors((prev) => {
-            if (!prev.googlePhone) return prev;
-            const next = { ...prev };
-            delete next.googlePhone;
-            return next;
-        });
-
         if (!validateTurnstile()) return;
 
         setLoading(true);
         try {
-            await googleLogin(googleStep.credential, normalizePhone(googlePhone), turnstileToken);
+            await googleLogin(credentialResponse.credential, '', turnstileToken);
             navigate('/');
         } catch (err) {
             setSubmitError(getAuthErrorMessage(err, 'Daftar Google gagal. Coba lagi.'));
@@ -145,72 +123,6 @@ export default function RegisterPage() {
         setTurnstileToken('');
         setTurnstileError('Gagal memuat verifikasi keamanan. Coba refresh halaman.');
     };
-
-    // Google phone step
-    if (googleStep) {
-        return (
-            <div className="auth-page">
-                <div className="auth-card">
-                    <div className="auth-card__header">
-                        <img className="auth-card__logo" src={logoImg} alt="Kelola Keuangan" width="64" height="64" />
-                        <h1 className="auth-card__title">Daftar dengan Google</h1>
-                        <p className="auth-card__subtitle">Masukkan nomor WhatsApp kamu</p>
-                    </div>
-                    <form className="auth-google-phone" onSubmit={handleGoogleComplete}>
-                        <div className="auth-google-phone__info">
-                            Nomor WA digunakan untuk notifikasi & pemulihan akun
-                        </div>
-                        {submitError && <div className="auth-form__error">{submitError}</div>}
-                        <div className="auth-form__group">
-                            <label className="auth-form__label">Nomor WhatsApp *</label>
-                            <input
-                                className={`auth-form__input ${fieldErrors.googlePhone ? 'auth-form__input--error' : ''}`}
-                                type="tel"
-                                placeholder="08xxxxxxxxxx"
-                                value={googlePhone}
-                                onChange={(e) => {
-                                    setGooglePhone(e.target.value);
-                                    clearFieldError('googlePhone');
-                                }}
-                                required
-                            />
-                            {fieldErrors.googlePhone && <div className="auth-form__field-error">{fieldErrors.googlePhone}</div>}
-                        </div>
-                        {IS_TURNSTILE_ENABLED && (
-                            <>
-                                <TurnstileWidget
-                                    ref={turnstileRef}
-                                    siteKey={TURNSTILE_SITE_KEY}
-                                    action="google_register"
-                                    onVerify={handleTurnstileVerify}
-                                    onExpire={handleTurnstileExpire}
-                                    onError={handleTurnstileError}
-                                />
-                                {turnstileError && <div className="auth-form__field-error auth-form__field-error--center">{turnstileError}</div>}
-                            </>
-                        )}
-                        <button className="auth-form__submit" type="submit" disabled={loading}>
-                            {loading ? 'Memproses...' : 'Daftar Sekarang'}
-                        </button>
-                        <button
-                            type="button"
-                            className="auth-form__submit"
-                            style={{ background: 'var(--bg-input)', color: 'var(--text-secondary)' }}
-                            onClick={() => {
-                                setGoogleStep(null);
-                                setFieldErrors({});
-                                setSubmitError('');
-                                setTurnstileError('');
-                                setTurnstileToken('');
-                            }}
-                        >
-                            Kembali
-                        </button>
-                    </form>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="auth-page">
@@ -257,7 +169,7 @@ export default function RegisterPage() {
                     </div>
 
                     <div className="auth-form__group">
-                        <label className="auth-form__label">Nomor WhatsApp</label>
+                        <label className="auth-form__label">Nomor</label>
                         <input
                             className={`auth-form__input ${fieldErrors.phone ? 'auth-form__input--error' : ''}`}
                             type="tel"
@@ -319,15 +231,11 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="auth-google" ref={googleRef}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => setSubmitError('Daftar Google gagal')}
-                        theme="outline"
-                        size="large"
-                        text="signup_with"
-                        shape="rectangular"
+                    <GoogleAuthButton
+                        mode="signup"
                         width={googleWidth}
-                        logo_alignment="center"
+                        onCredential={(credential) => handleGoogleSuccess({ credential })}
+                        onError={setSubmitError}
                     />
                 </div>
 

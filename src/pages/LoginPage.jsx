@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { GoogleLogin } from '@react-oauth/google';
+import GoogleAuthButton from '../components/ui/GoogleAuthButton';
 import useAuthStore from '../stores/authStore';
 import TurnstileWidget from '../components/ui/TurnstileWidget';
 import { getAuthErrorMessage, validateLoginForm } from '../utils/authValidation';
@@ -188,15 +188,11 @@ export default function LoginPage() {
                 </div>
 
                 <div className="auth-google" ref={googleRef}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={() => setSubmitError('Login Google gagal')}
-                        theme="outline"
-                        size="large"
-                        text="signin_with"
-                        shape="rectangular"
+                    <GoogleAuthButton
+                        mode="signin"
                         width={googleWidth}
-                        logo_alignment="center"
+                        onCredential={(credential) => handleGoogleSuccess({ credential })}
+                        onError={setSubmitError}
                     />
                 </div>
 

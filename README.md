@@ -267,6 +267,148 @@ GET /health → 200 OK
 
 ---
 
+## 📱 Build Aplikasi Android (APK / Play Store)
+
+Versi Android dibungkus dengan **Capacitor**: kode React yang sama persis dijalankan
+di dalam WebView native, jadi desainnya identik dengan versi web. Yang berbeda hanya
+cangkangnya — ada launcher icon, tombol back Android, dan **tidak ada
+service worker/PWA** (manifest & Workbox hanya ikut di build web).
+
+### Prerequisites
+
+- **JDK 17+** — paling praktis pakai yang dibundel Android Studio
+- **Android SDK** dengan platform `android-35` (atau lebih baru) + build-tools
+
+Gradle mencari JDK lewat `JAVA_HOME`, jadi set sekali (PowerShell):
+
+```powershell
+[Environment]::SetEnvironmentVariable(
+  "JAVA_HOME", "C:\Program Files\Android\Android Studio\jbr", "User")
+```
+
+Lalu beri tahu Gradle lokasi SDK lewat `android/local.properties`:
+
+```properties
+sdk.dir=C\:/Users/<user>/AppData/Local/Android/Sdk
+```
+
+> File ini berformat Java properties, jadi backslash adalah escape character.
+> Pakai forward slash seperti di atas — `sdk.dir=C:\Users\...` akan terbaca
+> rusak dan Gradle gagal dengan *"The filename, directory name, or volume label
+> syntax is incorrect"*. Kalau project dibuka lewat Android Studio, file ini
+> dibuat otomatis.
+
+### 1. Konfigurasi
+
+```bash
+cp .env.native.example .env.native
+```
+
+Build web dilayani satu origin dengan API-nya (`VITE_API_URL` kosong), tapi APK
+berjalan di origin `https://localhost`. Jadi di `.env.native`, `VITE_API_URL`
+**wajib absolut** ke domain produksi.
+
+### 2. Build APK debug (instal manual / testing)
+
+```bash
+npm run android:apk
+```
+
+Hasilnya di `android/app/build/outputs/apk/debug/app-debug.apk` — salin ke HP dan
+install (perlu mengaktifkan "Install unknown apps").
+
+### 3. Build AAB release (Play Store)
+
+Play Store hanya menerima bundle yang ditandatangani. Buat keystore **satu kali**
+lalu simpan baik-baik: kalau hilang, aplikasi di Play Store tidak bisa di-update lagi.
+
+```powershell
+& "C:\Program Files\Android\Android Studio\jbr\bin\keytool.exe" -genkey -v `
+  -keystore kelola-keuangan.jks -keyalg RSA -keysize 2048 -validity 10000 `
+  -alias kelola-keuangan
+```
+
+Buat `android/keystore.properties` (sudah masuk `.gitignore`):
+
+```properties
+storeFile=../../kelola-keuangan.jks
+storePassword=isi-password-keystore
+keyAlias=kelola-keuangan
+keyPassword=isi-password-key
+```
+
+```bash
+npm run android:aab
+```
+
+Hasilnya di `android/app/build/outputs/bundle/release/app-release.aab`. Tanpa
+`keystore.properties`, build release tetap jalan tapi bundle-nya tidak
+ditandatangani dan akan ditolak Play Store.
+
+### Daftar script
+
+| Script | Fungsi |
+|---|---|
+| `npm run build:native` | Build web assets mode native (tanpa PWA, API absolut) |
+| `npm run android:sync` | `build:native` + salin assets ke project Android |
+| `npm run android:open` | Sync lalu buka project di Android Studio |
+| `npm run android:apk` | Sync lalu build APK debug |
+| `npm run android:aab` | Sync lalu build AAB release |
+
+### Catatan penting
+
+**Login Google di aplikasi memakai jalur berbeda dari web.** Google Identity
+Services menolak dirender di dalam WebView (`disallowed_useragent`), jadi build
+native memakai `@capgo/capacitor-social-login` yang menjalankan **Google
+Credential Manager** — pemilih akun native. Keduanya menghasilkan ID token dengan
+`aud` yang sama (Web Client ID), sehingga `google_auth.go` menerima keduanya
+tanpa perubahan apa pun di backend. Komponennya satu: `GoogleAuthButton.jsx`
+memilih jalur berdasarkan `isNative`.
+
+Agar jalan, Google Cloud Console butuh **OAuth client bertipe Android** di project
+yang sama dengan Web client, berisi package name `com.mudahdeal.kelolakeuangan`
+dan SHA-1 sertifikat penandatangan. Client Android itu tidak dipakai di kode —
+keberadaannya saja yang menjadi izin Google menerbitkan token ke aplikasi ini.
+Ambil SHA-1 debug dengan:
+
+```powershell
+& "$env:JAVA_HOME\bin\keytool.exe" -list -v `
+  -keystore "$env:USERPROFILE\.android\debug.keystore" `
+  -alias androiddebugkey -storepass android
+```
+
+Untuk rilis, daftarkan **satu client Android lagi**. Kalau memakai Play App
+Signing (default untuk AAB), SHA-1 yang benar ada di **Play Console → App
+integrity → App signing key certificate**, bukan dari keystore lokal — Google
+menandatangani ulang aplikasinya. Salah ambil di sini membuat login Google gagal
+dengan `DEVELOPER_ERROR` hanya di versi Play Store, sementara build debug lancar.
+
+**Backend wajib di-redeploy sebelum APK bisa login.** Dari sudut pandang WebView,
+API berada di origin berbeda, jadi:
+
+- `config.Load()` selalu menambahkan `https://localhost` ke daftar CORS
+- cookie `refreshToken` dikirim dengan `SameSite=None; Secure` saat `APP_ENV=production`
+  (lihat `backend/internal/handler/cookie.go`)
+
+**Turnstile harus diizinkan untuk hostname `localhost`.** Kalau backend produksi
+punya `TURNSTILE_SECRET_KEY`, login akan ditolak bila token captcha kosong. Jadi
+isi `VITE_TURNSTILE_SITE_KEY` di `.env.native`, lalu tambahkan hostname
+`localhost` pada Hostname Management widget Turnstile di dashboard Cloudflare —
+di dalam APK halaman berjalan di `https://localhost`.
+
+**Splash sistem sengaja dibuat tidak terlihat.** Sejak Android 12, platform selalu
+menampilkan splash sendiri dan itu tidak bisa dimatikan. Kalau dibiarkan default,
+logo muncul dua kali: sekali dari sistem, sekali lagi dari `SplashScreen.jsx`. Jadi
+di `values-v31/styles.xml` latarnya disamakan dengan gradient gelap `SplashScreen.css`
+(`@color/splashBackground`) dan ikonnya diganti drawable transparan
+(`@drawable/splash_icon_none`), sehingga perpindahannya tidak terlihat. Jangan
+mengembalikan `windowSplashScreenAnimatedIcon` ke launcher icon kecuali splash React
+di aplikasinya ikut dihapus.
+
+**Update aplikasi.** APK yang diinstal manual tidak punya auto-update — setiap rilis
+baru harus dikirim ulang. Lewat Play Store, update ditangani Play. Naikkan
+`versionCode`/`versionName` di `android/app/build.gradle` sebelum rilis.
+
 ## API Documentation
 
 Base URL: `/api/v1`

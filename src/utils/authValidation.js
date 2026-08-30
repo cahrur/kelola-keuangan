@@ -57,9 +57,9 @@ export function validateRegisterForm(values) {
     }
 
     if (!phone) {
-        errors.phone = 'Nomor WhatsApp wajib diisi';
+        errors.phone = 'Nomor wajib diisi';
     } else if (!PHONE_REGEX.test(phone)) {
-        errors.phone = 'Nomor WhatsApp tidak valid';
+        errors.phone = 'Nomor tidak valid';
     }
 
     const passwordErrors = validateRegistrationPassword(password);
@@ -68,13 +68,6 @@ export function validateRegisterForm(values) {
     }
 
     return errors;
-}
-
-export function validateGooglePhone(phone) {
-    const cleaned = normalizePhone(phone || '');
-    if (!cleaned) return 'Nomor WhatsApp wajib diisi';
-    if (!PHONE_REGEX.test(cleaned)) return 'Nomor WhatsApp tidak valid';
-    return '';
 }
 
 function validateRegistrationPassword(password) {

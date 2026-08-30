@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"catat-keuangan-backend/internal/config"
 	"catat-keuangan-backend/internal/service"
 	"catat-keuangan-backend/internal/util"
 
@@ -76,8 +75,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		return
 	}
 
-	isSecure := config.AppConfig.AppEnv == "production"
-	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", isSecure, true)
+	setRefreshCookie(c, refreshToken, refreshCookieMaxAge)
 
 	util.Success(c, http.StatusCreated, "User registered successfully", gin.H{
 		"access_token": accessToken,
@@ -116,8 +114,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	// Set refresh token as httpOnly cookie
-	isSecure := config.AppConfig.AppEnv == "production"
-	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", isSecure, true)
+	setRefreshCookie(c, refreshToken, refreshCookieMaxAge)
 
 	util.Success(c, http.StatusOK, "Login successful", gin.H{
 		"access_token": accessToken,
@@ -138,8 +135,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	isSecure := config.AppConfig.AppEnv == "production"
-	c.SetCookie("refreshToken", newRefreshToken, 7*24*3600, "/", "", isSecure, true)
+	setRefreshCookie(c, newRefreshToken, refreshCookieMaxAge)
 
 	util.Success(c, http.StatusOK, "Token refreshed", gin.H{
 		"access_token": accessToken,
@@ -150,8 +146,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	h.AuthService.RevokeAllTokens(userID.(uint))
 
-	isSecure := config.AppConfig.AppEnv == "production"
-	c.SetCookie("refreshToken", "", -1, "/", "", isSecure, true)
+	clearRefreshCookie(c)
 
 	util.Success(c, http.StatusOK, "Logged out successfully", nil)
 }
