@@ -1,12 +1,12 @@
 {
-  "appId": "com.mudahdeal.kelolakeuangan",
+  "appId": "com.mudahdeal.kk",
   "appName": "Kelola Keuangan",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": false
   },
   "plugins": {
     "LocalNotifications": {

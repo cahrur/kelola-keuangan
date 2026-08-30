@@ -1,4 +1,4 @@
-package com.mudahdeal.kelolakeuangan;
+package com.mudahdeal.kk;
 
 import android.os.Bundle;
 import android.view.View;

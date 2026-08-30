@@ -25,6 +25,8 @@ android/app/release/
 android/local.properties
 android/keystore.properties
 android/capacitor-cordova-android-plugins/
+*.apk
+*.aab
 *.keystore
 *.jks
 

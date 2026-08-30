@@ -10,6 +10,7 @@
     "android:sync": "npm run build:native && cap sync android",
     "android:open": "npm run android:sync && cap open android",
     "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:apk:release": "npm run android:sync && cd android && gradlew.bat assembleRelease",
     "android:aab": "npm run android:sync && cd android && gradlew.bat bundleRelease",
     "lint": "eslint .",
     "preview": "vite preview"

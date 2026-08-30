@@ -366,7 +366,7 @@ tanpa perubahan apa pun di backend. Komponennya satu: `GoogleAuthButton.jsx`
 memilih jalur berdasarkan `isNative`.
 
 Agar jalan, Google Cloud Console butuh **OAuth client bertipe Android** di project
-yang sama dengan Web client, berisi package name `com.mudahdeal.kelolakeuangan`
+yang sama dengan Web client, berisi package name `com.mudahdeal.kk`
 dan SHA-1 sertifikat penandatangan. Client Android itu tidak dipakai di kode —
 keberadaannya saja yang menjadi izin Google menerbitkan token ke aplikasi ini.
 Ambil SHA-1 debug dengan:
