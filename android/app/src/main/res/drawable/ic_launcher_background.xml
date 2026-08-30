@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sits behind public/logo-maskable-512.png, which is opaque and full-bleed, so
+     this only shows if a launcher shape reaches past the artwork. Gradient stops
+     are sampled from the logo itself (#419e84 bottom-left, #64bb99 top-right) so
+     any such sliver blends instead of flashing a different colour. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="45"
+        android:startColor="#419e84"
+        android:endColor="#64bb99"
+        android:type="linear" />
+</shape>

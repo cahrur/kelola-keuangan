@@ -1,0 +1,43 @@
+/* Native Google sign-in button.
+   Mirrors the outline theme that Google Identity Services renders on the web, so
+   the Android build looks the same as the browser. Google's branding guidelines
+   fix the mark, the light surface and the neutral border — only the typography
+   follows the app. */
+.google-auth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    background: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    color: #1f1f1f;
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.google-auth-btn:hover:not(:disabled) {
+    background: #f8faff;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.3);
+}
+
+.google-auth-btn:active:not(:disabled) {
+    background: #f1f3f4;
+}
+
+.google-auth-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.google-auth-btn__mark {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}

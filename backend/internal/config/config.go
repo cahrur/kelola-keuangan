@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -35,6 +36,11 @@ type Config struct {
 	SMTPFrom           string
 }
 
+// capacitorOrigin is the origin the Android build serves the web app from.
+// It is fixed by the native shell and is always allowed through CORS, so the
+// app keeps working even if CORS_ORIGINS is set without it.
+const capacitorOrigin = "https://localhost"
+
 var AppConfig *Config
 
 func Load() *Config {
@@ -45,6 +51,9 @@ func Load() *Config {
 	origins := strings.Split(getEnv("CORS_ORIGINS", "http://localhost:5173"), ",")
 	for i := range origins {
 		origins[i] = strings.TrimSpace(origins[i])
+	}
+	if !slices.Contains(origins, capacitorOrigin) {
+		origins = append(origins, capacitorOrigin)
 	}
 
 	AppConfig = &Config{
@@ -76,11 +85,33 @@ func Load() *Config {
 	return AppConfig
 }
 
+// DSN builds a libpq keyword/value connection string.
+//
+// Every value is single-quoted. libpq and pgx skip the whitespace after "="
+// before reading a value, so an unquoted empty password swallows the next
+// keyword: "password= dbname=app" parses the password as "dbname=app" and
+// leaves dbname unset, which silently connects to the database named after the
+// user instead of the configured one. Quoting also keeps passwords containing
+// spaces or quotes intact.
 func (c *Config) DSN() string {
 	return fmt.Sprintf(
+		// TimeZone is a server runtime parameter: pgx forwards its value verbatim,
+		// so it must stay unquoted. It is a constant and ends the string, so it can
+		// neither be swallowed nor swallow anything.
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable TimeZone=Asia/Jakarta",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPass, c.DBName,
+		quoteDSNValue(c.DBHost),
+		quoteDSNValue(c.DBPort),
+		quoteDSNValue(c.DBUser),
+		quoteDSNValue(c.DBPass),
+		quoteDSNValue(c.DBName),
 	)
+}
+
+// quoteDSNValue wraps a connection-string value in the single quotes libpq uses
+// for values, escaping the backslash and quote it treats specially inside them.
+func quoteDSNValue(value string) string {
+	replacer := strings.NewReplacer(`\`, `\\`, `'`, `\'`)
+	return "'" + replacer.Replace(value) + "'"
 }
 
 func getEnv(key, fallback string) string {

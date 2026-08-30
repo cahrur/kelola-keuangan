@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pre-API-31 starting window: same dark ground and logo size as the in-app splash. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splashBackground" />
+    <item
+        android:gravity="center"
+        android:width="44dp"
+        android:height="44dp"
+        android:drawable="@drawable/splash_logo" />
+</layer-list>

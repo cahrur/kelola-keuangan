@@ -122,8 +122,7 @@ func (h *GoogleAuthHandler) GoogleLogin(c *gin.Context) {
 		return
 	}
 
-	isSecure := config.AppConfig.AppEnv == "production"
-	c.SetCookie("refreshToken", refreshToken, 7*24*3600, "/", "", isSecure, true)
+	setRefreshCookie(c, refreshToken, refreshCookieMaxAge)
 
 	util.Success(c, http.StatusOK, "Login successful", gin.H{
 		"access_token": accessToken,

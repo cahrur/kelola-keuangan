@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import logoImg from '../../assets/logo.webp';
+import { isNative } from '../../utils/platform';
 import './SplashScreen.css';
 
 export default function SplashScreen({ onFinish }) {
@@ -21,7 +22,9 @@ export default function SplashScreen({ onFinish }) {
     }, [onFinish]);
 
     return (
-        <div className={`splash splash--${phase}`}>
+        // On Android the system splash already shows this logo at this size,
+        // so re-running the entrance animation would make it visibly pop.
+        <div className={`splash splash--${phase}${isNative ? ' splash--handoff' : ''}`}>
             <div className="splash__content">
                 <div className="splash__logo-wrapper">
                     <img className="splash__logo" src={logoImg} alt="Kelola Keuangan" />

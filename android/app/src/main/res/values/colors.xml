@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mirrors src/styles/variables.css so native chrome matches the web design -->
+    <color name="colorPrimary">#3b987b</color>
+    <color name="colorPrimaryDark">#2d7660</color>
+    <color name="colorAccent">#3b987b</color>
+
+    <!-- CSS var bg-secondary: surface behind the status bar and the bottom nav -->
+    <color name="systemBarSurface">#fafbfb</color>
+
+    <!-- Darkest stop of the .splash gradient in SplashScreen.css -->
+    <color name="splashBackground">#0f1713</color>
+</resources>

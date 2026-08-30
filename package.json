@@ -1,15 +1,26 @@
 {
   "name": "catat-keuangan",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:native": "vite build --mode native",
+    "android:sync": "npm run build:native && cap sync android",
+    "android:open": "npm run android:sync && cap open android",
+    "android:apk": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:apk:release": "npm run android:sync && cd android && gradlew.bat assembleRelease",
+    "android:aab": "npm run android:sync && cd android && gradlew.bat bundleRelease",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.0",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.0",
+    "@capacitor/local-notifications": "^8.3.1",
+    "@capgo/capacitor-social-login": "^8.5.0",
     "@react-oauth/google": "^0.13.4",
     "axios": "^1.13.6",
     "date-fns": "^4.1.0",
@@ -22,6 +33,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.0",
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",

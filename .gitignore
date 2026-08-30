@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.native.example
 
 # === AI AGENT SKILLS ===
 skills/
@@ -13,6 +14,21 @@ node_modules/
 # === BUILD OUTPUT ===
 dist/
 build/
+
+# === ANDROID (Capacitor) ===
+android/app/build/
+android/build/
+android/.gradle/
+android/app/src/main/assets/public/
+android/app/src/main/res/xml/config.xml
+android/app/release/
+android/local.properties
+android/keystore.properties
+android/capacitor-cordova-android-plugins/
+*.apk
+*.aab
+*.keystore
+*.jks
 
 # === IDE ===
 .vscode/
