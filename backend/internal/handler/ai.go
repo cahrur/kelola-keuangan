@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -223,7 +224,8 @@ func (h *AIHandler) Chat(c *gin.Context) {
 	apiMessages = append(apiMessages, map[string]string{"role": "user", "content": req.Message})
 
 	// Call OpenAI-compatible API
-	reply, err := h.callAI(baseURL, apiKey, aiModel, apiMessages)
+	res, err := h.callAI(baseURL, apiKey, aiModel, apiMessages)
+	h.logAIUsage(uid, &session.ID, aiFeatureChat, aiModel, apiKey, res, err)
 	if err != nil {
 		// Don't leak external API error details in production
 		if config.AppConfig.AppEnv == "production" {
@@ -235,7 +237,7 @@ func (h *AIHandler) Chat(c *gin.Context) {
 	}
 
 	// Save assistant reply
-	assistantMsg := model.ChatMessage{SessionID: session.ID, Role: "assistant", Content: reply}
+	assistantMsg := model.ChatMessage{SessionID: session.ID, Role: "assistant", Content: res.Content}
 	h.DB.Create(&assistantMsg)
 
 	// Update session title on first real message (if still default)
@@ -719,7 +721,27 @@ Gunakan data di atas untuk memberikan analisis dan saran yang personal dan relev
 	return base
 }
 
-func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string]string) (string, error) {
+// aiCallResult carries back everything one AI call produced, not just the text.
+// The usage numbers arrive on every OpenAI-compatible response and used to be
+// thrown away here.
+//
+// Note for a future move to streaming: this call sets stream:false, so usage
+// comes back whole in a single response. A streaming call has to ask for it
+// explicitly with stream_options:{"include_usage":true}, or the numbers vanish.
+type aiCallResult struct {
+	Content          string
+	PromptTokens     int
+	CompletionTokens int
+	TotalTokens      int
+	DurationMs       int
+
+	// LogError is a short description safe to persist. The full error still
+	// goes back through the error return, but provider error bodies can echo
+	// the request, and the request carries the user's entire financial picture.
+	LogError string
+}
+
+func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string]string) (aiCallResult, error) {
 	url := baseURL + "/chat/completions"
 
 	body := map[string]interface{}{
@@ -731,9 +753,17 @@ func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string
 
 	jsonBody, _ := json.Marshal(body)
 
+	started := time.Now()
+	out := aiCallResult{}
+	fail := func(logError string, err error) (aiCallResult, error) {
+		out.DurationMs = int(time.Since(started).Milliseconds())
+		out.LogError = logError
+		return out, err
+	}
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return "", err
+		return fail("request build failed", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
@@ -741,14 +771,17 @@ func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string
 	client := &http.Client{Timeout: 120 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return fail("transport error", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("AI API error (status %d): %s", resp.StatusCode, string(respBody))
+		return fail(
+			fmt.Sprintf("http %d: %s", resp.StatusCode, providerErrorMessage(respBody)),
+			fmt.Errorf("AI API error (status %d): %s", resp.StatusCode, string(respBody)),
+		)
 	}
 
 	var result struct {
@@ -757,17 +790,103 @@ func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string
 				Content string `json:"content"`
 			} `json:"message"`
 		} `json:"choices"`
+		Usage struct {
+			PromptTokens     int `json:"prompt_tokens"`
+			CompletionTokens int `json:"completion_tokens"`
+			TotalTokens      int `json:"total_tokens"`
+		} `json:"usage"`
 	}
 
 	if err := json.Unmarshal(respBody, &result); err != nil {
-		return "", fmt.Errorf("gagal parse response AI: %v", err)
+		return fail("unparseable response", fmt.Errorf("gagal parse response AI: %v", err))
 	}
+
+	out.PromptTokens = result.Usage.PromptTokens
+	out.CompletionTokens = result.Usage.CompletionTokens
+	out.TotalTokens = result.Usage.TotalTokens
 
 	if len(result.Choices) == 0 {
-		return "", fmt.Errorf("AI tidak memberikan response")
+		return fail("empty choices", fmt.Errorf("AI tidak memberikan response"))
 	}
 
-	return result.Choices[0].Message.Content, nil
+	out.Content = result.Choices[0].Message.Content
+	out.DurationMs = int(time.Since(started).Milliseconds())
+	return out, nil
+}
+
+// providerErrorMessage pulls just the human-readable message out of an
+// OpenAI-style error body. The rest of the body is dropped on purpose: some
+// providers echo the offending request back, and that request holds the user's
+// finances.
+func providerErrorMessage(body []byte) string {
+	var parsed struct {
+		Error struct {
+			Message string `json:"message"`
+			Type    string `json:"type"`
+		} `json:"error"`
+	}
+
+	if err := json.Unmarshal(body, &parsed); err != nil || parsed.Error.Message == "" {
+		return "no error message"
+	}
+	return truncateRunes(parsed.Error.Message, 300)
+}
+
+func truncateRunes(s string, limit int) string {
+	r := []rune(s)
+	if len(r) <= limit {
+		return s
+	}
+	return string(r[:limit])
+}
+
+// Feature names for AIUsageLog.
+const (
+	aiFeatureChat    = "chat"
+	aiFeatureInsight = "insight"
+	aiFeatureVoice   = "voice"
+)
+
+// logAIUsage writes one row per AI call. It never fails the request: a usage
+// row that cannot be written is worth a server log line, not a broken chat.
+func (h *AIHandler) logAIUsage(userID uint, sessionID *uint, feature, model_, apiKey string, res aiCallResult, callErr error) {
+	entry := model.AIUsageLog{
+		UserID:           userID,
+		SessionID:        sessionID,
+		Feature:          feature,
+		Model:            model_,
+		KeySource:        aiKeySource(apiKey),
+		PromptTokens:     res.PromptTokens,
+		CompletionTokens: res.CompletionTokens,
+		TotalTokens:      res.TotalTokens,
+		Success:          callErr == nil,
+		DurationMs:       res.DurationMs,
+	}
+
+	if callErr != nil {
+		detail := res.LogError
+		if detail == "" {
+			detail = "unknown error"
+		}
+		entry.ErrorMessage = truncateRunes(detail, 500)
+	}
+
+	if err := h.DB.Create(&entry).Error; err != nil {
+		log.Printf("ai usage log failed (user %d, feature %s): %v", userID, feature, err)
+	}
+}
+
+// aiKeySource tells whose quota paid for a call.
+//
+// It compares the resolved key against the server key instead of checking
+// whether the user has one configured, because resolveAIConfig silently falls
+// back to the server key when a stored user key cannot be decrypted — and that
+// call really is on us.
+func aiKeySource(apiKey string) string {
+	if apiKey != "" && apiKey != config.AppConfig.AIAPIKey {
+		return "user"
+	}
+	return "server"
 }
 
 func truncateTitle(s string) string {
@@ -885,5 +1004,11 @@ Data keuangan (semua angka sudah dihitung server, gunakan apa adanya):
 		{"role": "user", "content": userMsg},
 	}
 
-	return h.callAI(baseURL, apiKey, model_, messages)
+	res, err := h.callAI(baseURL, apiKey, model_, messages)
+	h.logAIUsage(userID, nil, aiFeatureInsight, model_, apiKey, res, err)
+	if err != nil {
+		return "", err
+	}
+
+	return res.Content, nil
 }

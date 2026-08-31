@@ -73,16 +73,18 @@ func (h *AIHandler) ParseTransaction(c *gin.Context) {
 	var wallets []model.Wallet
 	h.DB.Where("user_id = ?", userID).Find(&wallets)
 
-	content, err := h.callAI(baseURL, config.AppConfig.AIAPIKey, config.AppConfig.AIModel, []map[string]string{
+	res, err := h.callAI(baseURL, config.AppConfig.AIAPIKey, config.AppConfig.AIModel, []map[string]string{
 		{"role": "system", "content": buildParsePrompt(categories, wallets)},
 		{"role": "user", "content": req.Text},
 	})
+	// Always the server key here, by design — see the note on ParseTransaction.
+	h.logAIUsage(userID.(uint), nil, aiFeatureVoice, config.AppConfig.AIModel, config.AppConfig.AIAPIKey, res, err)
 	if err != nil {
 		util.Error(c, http.StatusBadGateway, "Gagal memproses suara. Coba lagi.")
 		return
 	}
 
-	parsed, err := decodeParsedTransaction(content)
+	parsed, err := decodeParsedTransaction(res.Content)
 	if err != nil {
 		util.Error(c, http.StatusUnprocessableEntity, "Tidak menemukan nominal transaksi. Coba ucapkan lagi dengan jelas.")
 		return
