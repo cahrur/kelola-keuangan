@@ -28,47 +28,6 @@
     line-height: 1.5;
 }
 
-/* Pilihan format */
-.io-formats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-md);
-}
-
-.io-format {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-    padding: var(--space-md);
-    text-align: left;
-    background: var(--bg-input);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--radius-md);
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: border-color var(--transition-fast), background var(--transition-fast);
-}
-
-.io-format--active {
-    background: var(--accent-primary-glow);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-}
-
-.io-format__label {
-    font-weight: 600;
-    font-size: 14px;
-}
-
-.io-format__hint {
-    font-size: 11px;
-    color: var(--text-muted);
-    line-height: 1.4;
-}
-
-/* Pesan status */
 .io-message {
     display: flex;
     align-items: center;

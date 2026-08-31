@@ -50,27 +50,6 @@ export function buildCsv(rows) {
     return BOM + lines.join('\r\n');
 }
 
-export async function buildExcel(rows) {
-    const writeXlsxFile = (await import('write-excel-file/browser')).default;
-
-    // API paket ini memakai `columns` dengan sebuah fungsi `cell` per baris.
-    // Bentuk lama `schema` sudah dihapus dan sekarang ditolak, dan build browser
-    // mengembalikan { toBlob, toFile } — bukan buffer, opsi itu milik build Node.
-    // Keduanya salah sebelumnya, sehingga yang tersimpan adalah berkas 15 byte
-    // berisi "[object Object]": ada berkasnya, kosong isinya.
-    const columns = [
-        { header: HEADERS[0], cell: (r) => ({ type: String, value: neutralizeFormula(r.type) }) },
-        { header: HEADERS[1], cell: (r) => ({ type: Number, value: Number(r.amount) || 0 }) },
-        { header: HEADERS[2], cell: (r) => ({ type: String, value: neutralizeFormula(r.description) }) },
-        { header: HEADERS[3], cell: (r) => ({ type: String, value: neutralizeFormula(r.category) }) },
-        { header: HEADERS[4], cell: (r) => ({ type: String, value: neutralizeFormula(r.wallet) }) },
-        { header: HEADERS[5], cell: (r) => ({ type: String, value: neutralizeFormula(r.date) }) },
-    ];
-
-    const berkas = await writeXlsxFile(rows, { columns });
-    return berkas.toBlob();
-}
-
 // Header dicocokkan longgar: berkas bisa saja berasal dari ekspor kami (bahasa
 // Indonesia) atau disusun sendiri oleh pengguna dengan istilah Inggris.
 const HEADER_ALIASES = {

@@ -1,10 +1,10 @@
 import { useState, useRef, useMemo } from 'react';
-import { Download, Upload, FileSpreadsheet, FileText, FileDown, CircleCheckBig, CircleAlert } from 'lucide-react';
+import { Download, Upload, FileDown, CircleCheckBig, CircleAlert } from 'lucide-react';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
 import useWalletStore from '../stores/walletStore';
 import {
-    toRows, buildCsv, buildExcel, parseFile, buildTemplateRows,
+    toRows, buildCsv, parseFile, buildTemplateRows,
     filterByPeriod, periodFileLabel, availableYears,
 } from '../utils/transactionFile';
 import { saveFile } from '../utils/saveFile';
@@ -13,19 +13,12 @@ import Button from '../components/ui/Button';
 import PageHeader from '../components/layout/PageHeader';
 import './ImportExportPage.css';
 
-const FORMATS = {
-    csv: {
-        label: 'CSV',
-        hint: 'Terbuka di Excel, Google Sheets, dan Numbers',
-        extension: 'csv',
-        mime: 'text/csv;charset=utf-8',
-    },
-    excel: {
-        label: 'Excel',
-        hint: 'Berkas .xlsx dengan kolom siap pakai',
-        extension: 'xlsx',
-        mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    },
+// CSV saja. Berkasnya dibuka apa adanya oleh Excel, Google Sheets, LibreOffice,
+// dan Numbers, jadi "dukungan Excel" tetap ada tanpa memerlukan penulis .xlsx
+// sendiri — yang justru sempat menghasilkan berkas rusak.
+const CSV_FORMAT = {
+    extension: 'csv',
+    mime: 'text/csv;charset=utf-8',
 };
 
 const PERIODS = [
@@ -49,7 +42,6 @@ export default function ImportExportPage() {
     const { categories, getCategoryById } = useCategoryStore();
     const { wallets, getWalletById } = useWalletStore();
 
-    const [format, setFormat] = useState('csv');
     const [exporting, setExporting] = useState(false);
     const [exportError, setExportError] = useState('');
     const [savedAt, setSavedAt] = useState('');
@@ -91,13 +83,13 @@ export default function ImportExportPage() {
         setExporting(true);
         try {
             const rows = toRows(selected, { getCategoryById, getWalletById });
-            const config = FORMATS[format];
-            const data = format === 'excel' ? await buildExcel(rows) : buildCsv(rows);
             const label = periodFileLabel(period, todayStamp());
 
-            setSavedAt(describeSaved(
-                await saveFile(data, `transaksi-${label}.${config.extension}`, config.mime)
-            ));
+            setSavedAt(describeSaved(await saveFile(
+                buildCsv(rows),
+                `transaksi-${label}.${CSV_FORMAT.extension}`,
+                CSV_FORMAT.mime,
+            )));
         } catch {
             setExportError('Gagal membuat berkas. Coba lagi.');
         } finally {
@@ -110,7 +102,7 @@ export default function ImportExportPage() {
     const handleTemplate = async () => {
         try {
             const csv = buildCsv(buildTemplateRows(categories, wallets));
-            const saved = await saveFile(csv, 'template-impor-transaksi.csv', FORMATS.csv.mime);
+            const saved = await saveFile(csv, 'template-impor-transaksi.csv', CSV_FORMAT.mime);
             setImportError('');
             setSavedAt(saved.location ? `Template ${describeSaved(saved).toLowerCase()}` : '');
         } catch {
@@ -165,6 +157,7 @@ export default function ImportExportPage() {
                     <h2>Ekspor Transaksi</h2>
                 </div>
                 <p className="io-section__desc">
+                    Berkas CSV, terbuka langsung di Excel, Google Sheets, dan Numbers.
                     Kategori dan kantong ditulis sebagai nama, jadi berkasnya bisa
                     dibaca akun lain.
                 </p>
@@ -226,21 +219,6 @@ export default function ImportExportPage() {
                     {selected.length} dari {transactions.length} transaksi akan diekspor
                 </p>
 
-                <div className="io-formats">
-                    {Object.entries(FORMATS).map(([key, config]) => (
-                        <button
-                            key={key}
-                            type="button"
-                            className={`io-format ${format === key ? 'io-format--active' : ''}`}
-                            onClick={() => setFormat(key)}
-                            aria-pressed={format === key}
-                        >
-                            {key === 'excel' ? <FileSpreadsheet size={18} /> : <FileText size={18} />}
-                            <span className="io-format__label">{config.label}</span>
-                            <span className="io-format__hint">{config.hint}</span>
-                        </button>
-                    ))}
-                </div>
 
                 {savedAt && <p className="io-message io-message--ok"><CircleCheckBig size={16} /> {savedAt}</p>}
                 {exportError && <p className="io-message io-message--error">{exportError}</p>}
@@ -251,7 +229,7 @@ export default function ImportExportPage() {
                     disabled={exporting || selected.length === 0}
                     icon={<Download size={16} />}
                 >
-                    {exporting ? 'Menyiapkan...' : `Ekspor ${FORMATS[format].label}`}
+                    {exporting ? 'Menyiapkan...' : 'Ekspor CSV'}
                 </Button>
 
                 {selected.length === 0 && transactions.length > 0 && (
