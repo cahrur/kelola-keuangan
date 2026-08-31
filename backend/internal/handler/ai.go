@@ -127,6 +127,12 @@ func (h *AIHandler) UpdateAIConfig(c *gin.Context) {
 	h.DB.Where("user_id = ?", userID).FirstOrCreate(&cfg, model.UserAIConfig{UserID: userID.(uint)})
 
 	if req.BaseURL != "" {
+		// Server yang akan menembak URL ini, jadi user tidak boleh mengarahkannya
+		// ke jaringan internal. Lihat util.ValidateExternalURL.
+		if err := util.ValidateExternalURL(req.BaseURL); err != nil {
+			util.Error(c, http.StatusBadRequest, "Base URL ditolak: "+err.Error())
+			return
+		}
 		cfg.BaseURL = req.BaseURL
 	}
 	if req.APIKey != "" {
@@ -768,7 +774,8 @@ func (h *AIHandler) callAI(baseURL, apiKey, model_ string, messages []map[string
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{Timeout: 120 * time.Second}
+	// Menolak alamat internal saat menyambung, bukan hanya saat menyimpan:
+	client := util.SafeHTTPClient(120 * time.Second)
 	resp, err := client.Do(req)
 	if err != nil {
 		return fail("transport error", err)

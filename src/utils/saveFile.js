@@ -42,23 +42,24 @@ function saveOnWeb(blob, filename) {
     link.remove();
     // Dibebaskan setelah unduhan sempat dimulai.
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    return null;
+    return { location: null, notified: false };
 }
 
 async function saveOnNative(blob, filename, mimeType) {
     const { FileSaver } = await loadFileSaver();
 
-    await FileSaver.saveToDownloads({
+    const { notified } = await FileSaver.saveToDownloads({
         fileName: filename,
         data: await toBase64(blob),
         mimeType,
     });
-    return `Download/${filename}`;
+    return { location: `Download/${filename}`, notified: Boolean(notified) };
 }
 
 /**
- * @returns {Promise<string|null>} Lokasi berkas untuk ditampilkan ke pengguna,
- * atau null di web karena browser sudah punya indikator unduhannya sendiri.
+ * @returns {Promise<{location: string|null, notified: boolean}>} Lokasi berkas
+ * untuk ditampilkan ke pengguna — null di web, karena browser sudah punya
+ * indikator unduhannya sendiri — dan apakah notifikasi sistem sempat tayang.
  */
 export async function saveFile(data, filename, mimeType) {
     const blob = data instanceof Blob ? data : new Blob([data], { type: mimeType });

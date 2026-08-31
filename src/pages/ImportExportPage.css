@@ -119,3 +119,81 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--space-sm);
 }
+
+/* Pemilihan periode ekspor */
+.io-field {
+    margin-bottom: var(--space-md);
+}
+
+.io-field__label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.io-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.io-chip {
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.io-chip--active {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-glow);
+    color: var(--accent-primary);
+}
+
+.io-period-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.io-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.io-input > span {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Kolom tanggal iOS/Android mengecil sendiri kalau tidak dipaksa penuh, sehingga
+   kedua kolom grid jadi tidak sama lebar. */
+.io-input input,
+.io-input select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.io-count {
+    margin: 0 0 var(--space-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+}

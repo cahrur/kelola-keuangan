@@ -1,9 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Download, Upload, FileSpreadsheet, FileText, FileDown, CircleCheckBig, CircleAlert } from 'lucide-react';
 import useTransactionStore from '../stores/transactionStore';
 import useCategoryStore from '../stores/categoryStore';
 import useWalletStore from '../stores/walletStore';
-import { toRows, buildCsv, buildExcel, parseFile, buildTemplateRows } from '../utils/transactionFile';
+import {
+    toRows, buildCsv, buildExcel, parseFile, buildTemplateRows,
+    filterByPeriod, periodFileLabel, availableYears,
+} from '../utils/transactionFile';
 import { saveFile } from '../utils/saveFile';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -25,6 +28,18 @@ const FORMATS = {
     },
 };
 
+const PERIODS = [
+    { key: 'all', label: 'Semua' },
+    { key: 'year', label: 'Tahun' },
+    { key: 'month', label: 'Bulan' },
+    { key: 'range', label: 'Rentang' },
+];
+
+const MONTHS = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
+
 function todayStamp() {
     return new Date().toISOString().slice(0, 10);
 }
@@ -39,6 +54,19 @@ export default function ImportExportPage() {
     const [exportError, setExportError] = useState('');
     const [savedAt, setSavedAt] = useState('');
 
+    const now = new Date();
+    const [mode, setMode] = useState('all');
+    const [year, setYear] = useState(String(now.getFullYear()));
+    const [month, setMonth] = useState(String(now.getMonth() + 1).padStart(2, '0'));
+    const [from, setFrom] = useState('');
+    const [to, setTo] = useState('');
+
+    const period = { mode, year, month, from, to };
+    const years = useMemo(() => availableYears(transactions), [transactions]);
+    const selected = useMemo(() => filterByPeriod(transactions, period),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [transactions, mode, year, month, from, to]);
+
     const fileRef = useRef(null);
     const [parsedRows, setParsedRows] = useState(null);
     const [fileName, setFileName] = useState('');
@@ -46,17 +74,30 @@ export default function ImportExportPage() {
     const [importError, setImportError] = useState('');
     const [result, setResult] = useState(null);
 
+    // Di Android berkas ditulis langsung ke folder Download dan diumumkan lewat
+    // notifikasi yang bisa diketuk untuk membuka. Kalau notifikasinya dimatikan
+    // pengguna, pesan di layar ini yang jadi satu-satunya konfirmasi — jadi
+    // kalimatnya menyesuaikan, bukan menjanjikan notifikasi yang tak akan datang.
+    const describeSaved = ({ location, notified }) => {
+        if (!location) return '';
+        return notified
+            ? `Tersimpan di ${location}. Ketuk notifikasi untuk membuka.`
+            : `Tersimpan di ${location}`;
+    };
+
     const handleExport = async () => {
         setExportError('');
         setSavedAt('');
         setExporting(true);
         try {
-            const rows = toRows(transactions, { getCategoryById, getWalletById });
+            const rows = toRows(selected, { getCategoryById, getWalletById });
             const config = FORMATS[format];
             const data = format === 'excel' ? await buildExcel(rows) : buildCsv(rows);
+            const label = periodFileLabel(period, todayStamp());
 
-            const location = await saveFile(data, `transaksi-${todayStamp()}.${config.extension}`, config.mime);
-            setSavedAt(location ? `Tersimpan di ${location}` : '');
+            setSavedAt(describeSaved(
+                await saveFile(data, `transaksi-${label}.${config.extension}`, config.mime)
+            ));
         } catch {
             setExportError('Gagal membuat berkas. Coba lagi.');
         } finally {
@@ -69,9 +110,9 @@ export default function ImportExportPage() {
     const handleTemplate = async () => {
         try {
             const csv = buildCsv(buildTemplateRows(categories, wallets));
-            const location = await saveFile(csv, 'template-impor-transaksi.csv', FORMATS.csv.mime);
+            const saved = await saveFile(csv, 'template-impor-transaksi.csv', FORMATS.csv.mime);
             setImportError('');
-            setSavedAt(location ? `Template tersimpan di ${location}` : '');
+            setSavedAt(saved.location ? `Template ${describeSaved(saved).toLowerCase()}` : '');
         } catch {
             setImportError('Gagal membuat template. Coba lagi.');
         }
@@ -124,8 +165,65 @@ export default function ImportExportPage() {
                     <h2>Ekspor Transaksi</h2>
                 </div>
                 <p className="io-section__desc">
-                    Simpan {transactions.length} transaksi ke berkas. Kategori dan kantong
-                    ditulis sebagai nama, jadi berkasnya bisa dibaca akun lain.
+                    Kategori dan kantong ditulis sebagai nama, jadi berkasnya bisa
+                    dibaca akun lain.
+                </p>
+
+                <div className="io-field">
+                    <span className="io-field__label">Periode</span>
+                    <div className="io-chips">
+                        {PERIODS.map((p) => (
+                            <button
+                                key={p.key}
+                                type="button"
+                                className={`io-chip ${mode === p.key ? 'io-chip--active' : ''}`}
+                                onClick={() => setMode(p.key)}
+                                aria-pressed={mode === p.key}
+                            >
+                                {p.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {(mode === 'year' || mode === 'month') && (
+                    <div className="io-period-inputs">
+                        {mode === 'month' && (
+                            <label className="io-input">
+                                <span>Bulan</span>
+                                <select value={month} onChange={(e) => setMonth(e.target.value)}>
+                                    {MONTHS.map((name, i) => (
+                                        <option key={name} value={String(i + 1).padStart(2, '0')}>{name}</option>
+                                    ))}
+                                </select>
+                            </label>
+                        )}
+                        <label className="io-input">
+                            <span>Tahun</span>
+                            <select value={year} onChange={(e) => setYear(e.target.value)}>
+                                {(years.length > 0 ? years : [String(now.getFullYear())]).map((y) => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        </label>
+                    </div>
+                )}
+
+                {mode === 'range' && (
+                    <div className="io-period-inputs">
+                        <label className="io-input">
+                            <span>Dari</span>
+                            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                        </label>
+                        <label className="io-input">
+                            <span>Sampai</span>
+                            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+                        </label>
+                    </div>
+                )}
+
+                <p className="io-count">
+                    {selected.length} dari {transactions.length} transaksi akan diekspor
                 </p>
 
                 <div className="io-formats">
@@ -150,11 +248,17 @@ export default function ImportExportPage() {
                 <Button
                     fullWidth
                     onClick={handleExport}
-                    disabled={exporting || transactions.length === 0}
+                    disabled={exporting || selected.length === 0}
                     icon={<Download size={16} />}
                 >
                     {exporting ? 'Menyiapkan...' : `Ekspor ${FORMATS[format].label}`}
                 </Button>
+
+                {selected.length === 0 && transactions.length > 0 && (
+                    <p className="io-message io-message--warn">
+                        <CircleAlert size={16} /> Tidak ada transaksi pada periode ini.
+                    </p>
+                )}
             </Card>
 
             <Card className="io-section">

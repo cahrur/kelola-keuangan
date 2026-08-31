@@ -38,7 +38,7 @@ Aturan:
 - "amount" dalam rupiah sebagai angka polos. "dua puluh dua ribu" = 22000, "seratus lima puluh ribu" = 150000, "sejuta" = 1000000.
 - "type" adalah "income" hanya jika kalimatnya jelas tentang uang masuk (gaji, terima, dapat, bonus). Selain itu "expense".
 - "category_id" dipilih dari daftar kategori di bawah dan tipenya harus sama dengan "type". Jika tidak ada yang cocok, isi null.
-- "wallet_id" dipilih dari daftar kantong di bawah, hanya jika kalimatnya menyebut sumber dana (pakai gopay, dari bank, tunai, cash, dompet). Jika tidak disebut, isi null.
+- "wallet_id" dipilih dari daftar kantong di bawah jika kalimatnya menyebut sumber dana. Cocokkan dengan NAMA kantong pada daftar, abaikan besar kecil huruf, dan terima sebutan sebagian ("pakai bca" cocok dengan kantong bernama "Bank BCA"). Jika tidak ada yang cocok, isi null.
 - "description" ringkas, ambil dari kalimat aslinya. Jangan mengarang.
 - "date" memakai tanggal hari ini kecuali kalimatnya menyebut waktu lain (kemarin, 3 hari lalu).
 - Jika kalimat tidak menyebut nominal sama sekali, balas {"error":"no_amount"}.`
@@ -91,6 +91,12 @@ func (h *AIHandler) ParseTransaction(c *gin.Context) {
 	}
 
 	normalizeParsedTransaction(parsed, categories, wallets)
+
+	// Model sering melewatkan kantong walau jelas disebut, jadi kalimatnya
+	// dicocokkan sendiri ke daftar nama sebagai jaring pengaman.
+	if parsed.WalletID == nil {
+		parsed.WalletID = matchWalletByName(req.Text, wallets)
+	}
 
 	util.Success(c, http.StatusOK, "Transaksi terbaca", parsed)
 }
@@ -180,4 +186,34 @@ func normalizeParsedTransaction(parsed *parsedTransaction, categories []model.Ca
 	if _, err := time.Parse("2006-01-02", parsed.Date); err != nil {
 		parsed.Date = nowInJakarta().Format("2006-01-02")
 	}
+}
+
+// matchWalletByName finds the wallet the sentence actually named.
+//
+// The model is asked to fill wallet_id, but it is unreliable at it: wallet names
+// are personal ("BCA", "Dompet Istri", "Dana"), and a spoken sentence rarely
+// repeats them exactly. Matching the names ourselves is deterministic and costs
+// nothing, so the model's answer is treated as a suggestion and this as the
+// fallback whenever it left the field empty.
+//
+// Longest name wins, so "Bank BCA" beats "Bank" when both appear in the list.
+func matchWalletByName(text string, wallets []model.Wallet) *uint {
+	spoken := strings.ToLower(text)
+
+	var best *model.Wallet
+	for i := range wallets {
+		name := strings.ToLower(strings.TrimSpace(wallets[i].Name))
+		if name == "" || !strings.Contains(spoken, name) {
+			continue
+		}
+		if best == nil || len(name) > len(strings.ToLower(best.Name)) {
+			best = &wallets[i]
+		}
+	}
+
+	if best == nil {
+		return nil
+	}
+	id := best.ID
+	return &id
 }

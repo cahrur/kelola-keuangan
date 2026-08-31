@@ -53,16 +53,22 @@ export function buildCsv(rows) {
 export async function buildExcel(rows) {
     const writeXlsxFile = (await import('write-excel-file/browser')).default;
 
-    const schema = [
-        { column: HEADERS[0], type: String, value: (r) => neutralizeFormula(r.type) },
-        { column: HEADERS[1], type: Number, value: (r) => r.amount },
-        { column: HEADERS[2], type: String, value: (r) => neutralizeFormula(r.description) },
-        { column: HEADERS[3], type: String, value: (r) => neutralizeFormula(r.category) },
-        { column: HEADERS[4], type: String, value: (r) => neutralizeFormula(r.wallet) },
-        { column: HEADERS[5], type: String, value: (r) => neutralizeFormula(r.date) },
+    // API paket ini memakai `columns` dengan sebuah fungsi `cell` per baris.
+    // Bentuk lama `schema` sudah dihapus dan sekarang ditolak, dan build browser
+    // mengembalikan { toBlob, toFile } — bukan buffer, opsi itu milik build Node.
+    // Keduanya salah sebelumnya, sehingga yang tersimpan adalah berkas 15 byte
+    // berisi "[object Object]": ada berkasnya, kosong isinya.
+    const columns = [
+        { header: HEADERS[0], cell: (r) => ({ type: String, value: neutralizeFormula(r.type) }) },
+        { header: HEADERS[1], cell: (r) => ({ type: Number, value: Number(r.amount) || 0 }) },
+        { header: HEADERS[2], cell: (r) => ({ type: String, value: neutralizeFormula(r.description) }) },
+        { header: HEADERS[3], cell: (r) => ({ type: String, value: neutralizeFormula(r.category) }) },
+        { header: HEADERS[4], cell: (r) => ({ type: String, value: neutralizeFormula(r.wallet) }) },
+        { header: HEADERS[5], cell: (r) => ({ type: String, value: neutralizeFormula(r.date) }) },
     ];
 
-    return writeXlsxFile(rows, { schema, buffer: true });
+    const berkas = await writeXlsxFile(rows, { columns });
+    return berkas.toBlob();
 }
 
 // Header dicocokkan longgar: berkas bisa saja berasal dari ekspor kami (bahasa
@@ -170,7 +176,12 @@ export async function parseFile(file) {
 
     if (isExcel) {
         const readXlsxFile = (await import('read-excel-file/browser')).default;
-        const grid = await readXlsxFile(file);
+        const hasil = await readXlsxFile(file);
+
+        // Paket ini mengembalikan [{ sheet, data }], bukan larik dua dimensi.
+        // Versi sebelumnya mengembalikan lariknya langsung, jadi keduanya
+        // diterima agar impor tidak diam-diam rusak lagi saat paketnya naik versi.
+        const grid = Array.isArray(hasil[0]) ? hasil : (hasil[0]?.data ?? []);
         return rowsFromGrid(grid);
     }
 
@@ -210,4 +221,49 @@ export function buildTemplateRows(categories, wallets) {
             date: today,
         },
     ];
+}
+
+/**
+ * Menyaring transaksi menurut periode yang dipilih pengguna.
+ *
+ * Tanggal disimpan sebagai teks YYYY-MM-DD, yang urut secara leksikografis —
+ * jadi perbandingan langsung sudah benar tanpa perlu mengurai ke objek Date,
+ * dan tidak ada risiko pergeseran zona waktu.
+ */
+export function filterByPeriod(transactions, period) {
+    const { mode, year, month, from, to } = period;
+
+    if (mode === 'year') {
+        return transactions.filter((t) => String(t.date).slice(0, 4) === year);
+    }
+    if (mode === 'month') {
+        return transactions.filter((t) => String(t.date).slice(0, 7) === `${year}-${month}`);
+    }
+    if (mode === 'range') {
+        if (!from || !to) return [];
+        // Dibalik kalau pengguna mengisi terbalik, daripada mengembalikan kosong
+        // tanpa penjelasan.
+        const [awal, akhir] = from <= to ? [from, to] : [to, from];
+        return transactions.filter((t) => t.date >= awal && t.date <= akhir);
+    }
+    return transactions;
+}
+
+/** Potongan nama berkas yang menjelaskan periodenya, supaya unduhan tidak tertukar. */
+export function periodFileLabel(period, today) {
+    const { mode, year, month, from, to } = period;
+
+    if (mode === 'year') return year;
+    if (mode === 'month') return `${year}-${month}`;
+    if (mode === 'range' && from && to) {
+        const [awal, akhir] = from <= to ? [from, to] : [to, from];
+        return `${awal}_sd_${akhir}`;
+    }
+    return `semua-${today}`;
+}
+
+/** Tahun yang benar-benar punya transaksi, terbaru dulu. */
+export function availableYears(transactions) {
+    const years = new Set(transactions.map((t) => String(t.date).slice(0, 4)).filter(Boolean));
+    return [...years].sort().reverse();
 }
