@@ -10,3 +10,14 @@ export const isNative = Capacitor.isNativePlatform();
 
 /** 'android' | 'ios' | 'web' */
 export const platform = Capacitor.getPlatform();
+
+/**
+ * Apakah input suara tersedia di platform ini.
+ *
+ * Android WebView tidak mengimplementasikan Web Speech API, jadi build native
+ * memakai plugin pengenal suara bawaan Android. Browser tanpa API itu tidak
+ * menampilkan tombolnya sama sekali.
+ */
+export function isVoiceInputSupported() {
+    return isNative || Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+}

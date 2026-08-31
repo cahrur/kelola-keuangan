@@ -1,0 +1,46 @@
+/* Tombol input suara — sejajar dengan tombol "Tambah Transaksi" di atasnya,
+   memakai gaya sekunder supaya tetap jelas mana aksi utamanya. */
+.voice-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--accent-primary);
+    font-family: var(--font-family);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.voice-btn:hover:not(:disabled) {
+    background: var(--bg-card-hover);
+}
+
+.voice-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Saat merekam, tombol berdenyut supaya jelas mikrofon sedang aktif */
+.voice-btn--listening {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-glow);
+    animation: voicePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes voicePulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--accent-primary-glow); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .voice-btn--listening {
+        animation: none;
+    }
+}
