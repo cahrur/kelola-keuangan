@@ -18,6 +18,13 @@ export const SocialLogin = {
     login: nativeOnly('SocialLogin'),
 };
 
+export const SpeechRecognition = {
+    start: nativeOnly('SpeechRecognition'),
+    stop: nativeOnly('SpeechRecognition'),
+    checkPermissions: nativeOnly('SpeechRecognition'),
+    requestPermissions: nativeOnly('SpeechRecognition'),
+};
+
 export const LocalNotifications = {
     checkPermissions: nativeOnly('LocalNotifications'),
     requestPermissions: nativeOnly('LocalNotifications'),

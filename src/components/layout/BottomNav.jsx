@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router';
-import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, Settings, X, LogOut, Sparkles } from 'lucide-react';
+import { LayoutDashboard, ArrowLeftRight, Wallet, HandCoins, BarChart3, Menu, Tag, PiggyBank, CalendarCheck, FileUp, Settings, X, LogOut, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import useAuthStore from '../../stores/authStore';
 import './BottomNav.css';
@@ -17,6 +17,7 @@ const MORE_NAV = [
     { to: '/categories', icon: Tag, label: 'Kategori' },
     { to: '/budgets', icon: PiggyBank, label: 'Anggaran' },
     { to: '/reports', icon: BarChart3, label: 'Laporan' },
+    { to: '/import-export', icon: FileUp, label: 'Impor & Ekspor' },
     { to: '/settings', icon: Settings, label: 'Setelan' },
 ];
 

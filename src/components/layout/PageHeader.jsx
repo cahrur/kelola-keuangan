@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router';
-import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, Settings, Info, LogOut } from 'lucide-react';
+import { Menu, X, HandCoins, CalendarCheck, Tag, PiggyBank, BarChart3, FileUp, Settings, Info, LogOut } from 'lucide-react';
 import useAuthStore from '../../stores/authStore';
 import logoImg from '../../assets/logo.webp';
 
@@ -10,6 +10,7 @@ const DRAWER_NAV = [
     { to: '/categories', icon: Tag, label: 'Kategori' },
     { to: '/budgets', icon: PiggyBank, label: 'Anggaran' },
     { to: '/reports', icon: BarChart3, label: 'Laporan' },
+    { to: '/import-export', icon: FileUp, label: 'Impor & Ekspor' },
     { to: '/settings', icon: Settings, label: 'Setelan' },
     { to: '/about', icon: Info, label: 'Tentang' },
 ];

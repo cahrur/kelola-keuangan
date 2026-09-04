@@ -39,6 +39,7 @@ func main() {
 		&model.ChatMessage{},
 		&model.UserAIConfig{},
 		&model.AIInsightCache{},
+		&model.AIUsageLog{},
 		&model.PasswordResetOTP{},
 		&model.WalletTransfer{},
 		&model.WalletAdjustment{},

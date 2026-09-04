@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
         // keeps their code out of the web bundle and the PWA precache.
         '@capgo/capacitor-social-login': nativeStub,
         '@capacitor/local-notifications': nativeStub,
+        '@capgo/capacitor-speech-recognition': nativeStub,
       },
     },
     define: {

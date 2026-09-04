@@ -43,6 +43,15 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
+      Hanya untuk Android 9 ke bawah, tempat menulis ke folder Download masih
+      lewat File API. Sejak Android 10 FileSaverPlugin memakai MediaStore yang
+      tidak memerlukan izin apa pun, jadi izin ini dibatasi maxSdkVersion.
+    -->
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+
+    <!--
       @capacitor/local-notifications ships SCHEDULE_EXACT_ALARM in its manifest.
       Google Play restricts that permission to alarm-clock and calendar apps, and
       a daily 20:00 reminder does not need alarm-level precision — notification.js

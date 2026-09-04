@@ -28,6 +28,7 @@ const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
 const BudgetsPage = lazy(() => import('./pages/BudgetsPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const ImportExportPage = lazy(() => import('./pages/ImportExportPage'));
 const WalletsPage = lazy(() => import('./pages/WalletsPage'));
 const DebtsPage = lazy(() => import('./pages/DebtsPage'));
 const ObligationsPage = lazy(() => import('./pages/ObligationsPage'));
@@ -93,6 +94,7 @@ function AppContent() {
             <Route path="/categories" element={<ProtectedRoute><CategoriesPage /></ProtectedRoute>} />
             <Route path="/budgets" element={<ProtectedRoute><BudgetsPage /></ProtectedRoute>} />
             <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+            <Route path="/import-export" element={<ProtectedRoute><ImportExportPage /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
 
             {/* Public info pages */}

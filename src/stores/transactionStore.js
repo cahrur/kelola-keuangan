@@ -15,6 +15,23 @@ const useTransactionStore = create((set, get) => ({
         }
     },
 
+    // Mengubah kalimat menjadi draf transaksi lewat AI di server. Tidak menyimpan
+    // apa pun — hasilnya dipakai untuk mengisi formulir yang dikonfirmasi pengguna.
+    parseFromText: async (text) => {
+        const { data } = await api.post('/ai/parse-transaction', { text });
+        return data.data;
+    },
+
+    // Impor massal. Server memvalidasi tiap baris dan melewati yang bermasalah,
+    // jadi hasilnya bisa sebagian — pemanggil yang menampilkan ringkasannya.
+    importTransactions: async (rows) => {
+        const { data } = await api.post('/transactions/import', { transactions: rows });
+        // Saldo kantong ikut berubah di server, jadi keduanya ditarik ulang.
+        await get().fetchTransactions();
+        useWalletStore.getState().fetchWallets();
+        return data.data;
+    },
+
     addTransaction: async (transaction) => {
         const { data } = await api.post('/transactions', transaction);
         set((state) => ({ transactions: [data.data, ...state.transactions] }));

@@ -14,6 +14,8 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Didaftarkan sebelum super.onCreate() supaya tersedia saat bridge dibuat.
+        registerPlugin(FileSaverPlugin.class);
         super.onCreate(savedInstanceState);
         keepWebViewOutOfSystemBars();
     }

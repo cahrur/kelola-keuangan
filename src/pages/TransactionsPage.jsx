@@ -12,10 +12,12 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 import EmptyState from '../components/ui/EmptyState';
 import CurrencyInput from '../components/ui/CurrencyInput';
 import PageHeader from '../components/layout/PageHeader';
+import VoiceInputButton from '../components/ui/VoiceInputButton';
+import { isVoiceInputSupported } from '../utils/platform';
 import './TransactionsPage.css';
 
 export default function TransactionsPage() {
-    const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions } =
+    const { transactions, addTransaction, updateTransaction, deleteTransaction, getFilteredTransactions, parseFromText } =
         useTransactionStore();
     const { categories, getCategoryById } = useCategoryStore();
     const { wallets, getWalletById } = useWalletStore();
@@ -69,6 +71,32 @@ export default function TransactionsPage() {
     const openAddForm = () => {
         resetForm();
         setShowForm(true);
+    };
+
+    const [voiceError, setVoiceError] = useState('');
+    const [voiceLoading, setVoiceLoading] = useState(false);
+
+    // Hasil AI sengaja hanya mengisi formulir, tidak langsung menyimpan: salah
+    // dengar nominal pada aplikasi keuangan lebih buruk daripada satu ketukan
+    // konfirmasi tambahan.
+    const handleTranscript = async (transcript) => {
+        setVoiceError('');
+        setVoiceLoading(true);
+        try {
+            const draft = await parseFromText(transcript);
+            resetForm();
+            setFormType(draft.type);
+            setFormAmount(String(draft.amount));
+            setFormDesc(draft.description);
+            setFormCategory(draft.categoryId ?? '');
+            setFormWallet(draft.walletId ?? '');
+            setFormDate(draft.date);
+            setShowForm(true);
+        } catch (err) {
+            setVoiceError(err.response?.data?.message || 'Gagal memproses suara. Coba lagi.');
+        } finally {
+            setVoiceLoading(false);
+        }
     };
 
     const openEditForm = (txn) => {
@@ -218,9 +246,22 @@ export default function TransactionsPage() {
             )}
 
             {/* Add Button */}
-            <Button fullWidth className="mb-lg" onClick={openAddForm} icon={<Plus size={18} />}>
+            <Button fullWidth onClick={openAddForm} icon={<Plus size={18} />}>
                 Tambah Transaksi
             </Button>
+
+            {/* Voice Input — hanya muncul kalau platformnya mendukung */}
+            {isVoiceInputSupported() && (
+                <div className="voice-input mb-lg">
+                    <VoiceInputButton
+                        onTranscript={handleTranscript}
+                        onError={setVoiceError}
+                        disabled={voiceLoading}
+                    />
+                    {voiceLoading && <p className="voice-input__status">Membaca ucapan...</p>}
+                    {voiceError && <p className="voice-input__error">{voiceError}</p>}
+                </div>
+            )}
 
             {/* Transaction List */}
             <div className="stagger-children">

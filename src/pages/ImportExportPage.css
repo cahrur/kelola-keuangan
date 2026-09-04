@@ -1,0 +1,158 @@
+/* Halaman Impor & Ekspor. Kelas diberi awalan io- dan hanya dipakai di sini,
+   supaya tidak terjadi lagi kasus seperti .txn-item yang aturannya menumpang
+   di CSS halaman lain. */
+
+.io-section {
+    margin-bottom: var(--space-lg);
+}
+
+.io-section__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    color: var(--accent-primary);
+    margin-bottom: var(--space-sm);
+}
+
+.io-section__header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.io-section__desc {
+    margin: 0 0 var(--space-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.io-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: var(--space-sm) 0;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.io-message--ready {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.io-message--error {
+    color: var(--color-danger);
+}
+
+.io-message--ok {
+    color: var(--color-income);
+    font-weight: 600;
+}
+
+.io-message--warn {
+    color: var(--color-warning);
+    font-weight: 600;
+}
+
+.io-result {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--glass-border);
+}
+
+.io-errors {
+    margin: var(--space-sm) 0 0;
+    padding-left: var(--space-lg);
+    color: var(--text-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* Template dan pilih berkas berdampingan supaya alurnya terbaca berurutan */
+.io-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+}
+
+/* Pemilihan periode ekspor */
+.io-field {
+    margin-bottom: var(--space-md);
+}
+
+.io-field__label {
+    display: block;
+    margin-bottom: var(--space-sm);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.io-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+}
+
+.io-chip {
+    padding: 8px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.io-chip--active {
+    border-color: var(--accent-primary);
+    background: var(--accent-primary-glow);
+    color: var(--accent-primary);
+}
+
+.io-period-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+}
+
+.io-input {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.io-input > span {
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Kolom tanggal iOS/Android mengecil sendiri kalau tidak dipaksa penuh, sehingga
+   kedua kolom grid jadi tidak sama lebar. */
+.io-input input,
+.io-input select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.io-count {
+    margin: 0 0 var(--space-md);
+    color: var(--text-secondary);
+    font-size: 13px;
+}

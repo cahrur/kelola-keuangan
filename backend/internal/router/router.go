@@ -90,6 +90,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 			// Transactions
 			protected.GET("/transactions", transactionHandler.List)
 			protected.POST("/transactions", transactionHandler.Create)
+			protected.POST("/transactions/import", transactionHandler.ImportTransactions)
 			protected.PUT("/transactions/:id", transactionHandler.Update)
 			protected.DELETE("/transactions/:id", transactionHandler.Delete)
 
@@ -133,6 +134,7 @@ func Setup(db *gorm.DB) *gin.Engine {
 			protected.DELETE("/ai/sessions/:id", aiHandler.DeleteSession)
 			protected.GET("/ai/sessions/:id/messages", aiHandler.GetMessages)
 			protected.POST("/ai/chat", aiHandler.Chat)
+			protected.POST("/ai/parse-transaction", aiHandler.ParseTransaction)
 			protected.GET("/ai/config", aiHandler.GetAIConfig)
 			protected.PUT("/ai/config", aiHandler.UpdateAIConfig)
 			protected.GET("/ai/insight", aiHandler.GetInsight)

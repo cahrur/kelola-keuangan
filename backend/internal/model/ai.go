@@ -63,3 +63,37 @@ type AIInsightCache struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// AIUsageLog records one AI call: how many tokens it burned, on whose key, and
+// whether it worked.
+//
+// Deliberately metrics only. The prompt and the reply are not stored here: the
+// conversation already lives in ChatMessage, and buildSystemPrompt injects the
+// user's entire financial picture into every request. Copying that into a log
+// table would duplicate the most sensitive data in the system for no gain.
+//
+// Failed calls are recorded too. A request that dies mid-flight can still be
+// billed by the provider, and the failure rows are what turn a report of "the
+// AI is broken" into something diagnosable.
+type AIUsageLog struct {
+	ID        uint  `json:"id" gorm:"primaryKey"`
+	UserID    uint  `json:"user_id" gorm:"index;not null"`
+	SessionID *uint `json:"session_id" gorm:"index"` // null for insight and voice
+
+	Feature string `json:"feature" gorm:"size:30;index;not null"` // chat, insight, voice
+	Model   string `json:"model" gorm:"size:100;index"`
+
+	// KeySource separates cost we pay from cost the user pays with their own
+	// key from Settings. Without it a spend dashboard is simply wrong.
+	KeySource string `json:"key_source" gorm:"size:20;index;not null"` // server, user
+
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+
+	Success      bool   `json:"success" gorm:"index"`
+	ErrorMessage string `json:"error_message" gorm:"size:500"`
+	DurationMs   int    `json:"duration_ms"`
+
+	CreatedAt time.Time `json:"created_at" gorm:"index"`
+}
