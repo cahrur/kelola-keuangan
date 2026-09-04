@@ -76,10 +76,11 @@
         }
       }
     },
-    "fast-uri": "^3.1.5",
+    "fast-uri": "^3.1.7",
     "js-yaml": "^4.3.1",
     "@babel/core": "^7.29.7",
     "postcss": "^8.5.18",
-    "nanoid": "^3.3.18"
+    "nanoid": "^3.3.18",
+    "@humanfs/node": "^0.16.8"
   }
 }
